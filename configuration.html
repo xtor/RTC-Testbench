@@ -1,0 +1,434 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration &mdash; Linux RealTime Communication Testbench v5.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b27cedc7"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Security" href="security.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Linux RealTime Communication Testbench
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Build</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#traffic-configuration">Traffic configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#network-interface-configuration">Network interface configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#udp-communication">UDP communication</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="security.html">Security</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mqtt.html">MQTT and Grafana Integration</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="histogram.html">Histograms</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="test.html">Test runs</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wireshark.html">Wireshark</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debug</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="qa.html">Quality Assurance</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Linux RealTime Communication Testbench</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/configuration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration">
+<span id="id1"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading"></a></h1>
+<section id="traffic-configuration">
+<h2>Traffic configuration<a class="headerlink" href="#traffic-configuration" title="Permalink to this heading"></a></h2>
+<p>The applications itself are configurable. The configuration defines all required parameters such as
+how many frames are transmitted per cycle, which traffic classes are active, the cycle time, clock
+and many more.</p>
+<p>The configuration is based on YAML files and parsed at startup. Valid configurations have to be
+created before starting the simulation.</p>
+<p>Possible parameters include:</p>
+<table class="docutils align-default" id="id2">
+<caption><span class="caption-text">Configuration options</span><a class="headerlink" href="#id2" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 33.3%" />
+<col style="width: 66.7%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ApplicationClockId (String)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CLOCK_TAI</span></code> or <code class="docutils literal notranslate"><span class="pre">CLOCK_MONOTONIC</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>ApplicationBaseStartTimeNS (Integer)</p></td>
+<td><p>Absolute start time of simulation (or nothing for default value now + 30s)</p></td>
+</tr>
+<tr class="row-even"><td><p>ApplicationBaseCycleTimeNS (Integer)</p></td>
+<td><p>Application cycle time</p></td>
+</tr>
+<tr class="row-odd"><td><p>ApplicationTxBaseOffsetNS (Integer)</p></td>
+<td><p>Execution offset of Tx threads within Application cycle time</p></td>
+</tr>
+<tr class="row-even"><td><p>ApplicationRxBaseOffsetNS (Integer)</p></td>
+<td><p>Execution offset of Rx threads within Application cycle time</p></td>
+</tr>
+<tr class="row-odd"><td><p>ApplicationXdpProgram (String)</p></td>
+<td><p>Application specific XDP program</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;Enabled (Boolean)</p></td>
+<td><p>Selects whether this traffic is active or not</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;XdpEnabled (Boolean)</p></td>
+<td><p>Use XDP instead of RAW sockets</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;XdpSkbMode (Boolean)</p></td>
+<td><p>Use XDP skb mode (for testing XDP code or driver implementation)</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;XdpZcMode (Boolean)</p></td>
+<td><p>Use XDP zero copy mode</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;XdpWakeupMode (Boolean)</p></td>
+<td><p>Use XDP wakeup mode</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;XdpBusyPollMode (Boolean)</p></td>
+<td><p>Drive XDP socket in busy poll mode</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;TxTimeEnabled (Boolean)</p></td>
+<td><p>Use Tx Launch Time for all transmitted frames (requires ETF Qdisc and is not compatible with
+XDP)</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;TxTimeOffsetNS (Integer)</p></td>
+<td><p>Optional Tx Launch Time offset relative to Qbv schedule and cycle time</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;TxHwTstampEnabled (Boolean)</p></td>
+<td><p>Enable TX hardware timestamping for latency measurement (requires TX_TIMESTAMP build option)</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;IgnoreRxErrors (Boolean)</p></td>
+<td><p>By default, the applications perform consistency checks for all received frames. This option
+disables these checks. Do not enable this. This is only useful for testing e.g., overload
+scenarios.</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;Vid (Integer)</p></td>
+<td><p>VLAN ID used for traffic generation</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;Pcp (Integer)</p></td>
+<td><p>VLAN PCP used for traffic generation</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;NumFramesPerCycle (Integer)</p></td>
+<td><p>Number of frames transmitted per cycle</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;PayloadPattern (String)</p></td>
+<td><p>Payload pattern for frame content. The payload is a sequence of bytes. If the payload pattern
+is smaller than the frame size, zero padding is added.</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;FrameLength (Integer)</p></td>
+<td><p>Length of frames excluding four bytes of FCS</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;SecurityMode (String)</p></td>
+<td><p>One of <code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">AO</span></code> (Authentication only), <code class="docutils literal notranslate"><span class="pre">AE</span></code> (Authentication and Encryption)</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;SecurityAlgorithm (String)</p></td>
+<td><p>One of <code class="docutils literal notranslate"><span class="pre">AES256-GCM</span></code>, <code class="docutils literal notranslate"><span class="pre">AES128-GCM</span></code>, <code class="docutils literal notranslate"><span class="pre">CHACHA20-POLY1305</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;SecurityKey (String)</p></td>
+<td><p>Key to be used for crypto functions either 16 or 32 bytes depending on selected algorithm</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;SecurityIvPrefix (String)</p></td>
+<td><p>Prefix of the IV which is 6 bytes in size</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;RxQueue (Integer)</p></td>
+<td><p>Receive queue</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;TxQueue (Integer)</p></td>
+<td><p>Transmit queue. This is not used at the moment. Tx queue is determined via
+<code class="docutils literal notranslate"><span class="pre">SocketPriority</span></code>. For XDP the socket is bound to <code class="docutils literal notranslate"><span class="pre">RxQueue</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;SocketPriority (Integer): Socket priority</p></td>
+<td><p>Socket priority. It used for QoS of the operating system.</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;TxThreadPriority (Integer)</p></td>
+<td><p>Tx thread priority based on SCHED_FIFO</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;RxThreadPriority (Integer)</p></td>
+<td><p>Rx thread priority based on SCHED_FIFO</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;TxThreadCpu (Integer)</p></td>
+<td><p>Tx thread CPU affinity</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;RxThreadCpu (Integer)</p></td>
+<td><p>Rx thread CPU affinity</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;Interface (String)</p></td>
+<td><p>Network interface to be used</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;Destination (MAC/IP Address)</p></td>
+<td><p>Destination MAC/IP address</p></td>
+</tr>
+<tr class="row-even"><td><p>LogThreadPriority (Integer):</p></td>
+<td><p>Log thread priority based on SCHED_FIFO</p></td>
+</tr>
+<tr class="row-odd"><td><p>LogThreadCpu (Integer)</p></td>
+<td><p>Log thread CPU affinity</p></td>
+</tr>
+<tr class="row-even"><td><p>LogFile (String)</p></td>
+<td><p>Path to log file</p></td>
+</tr>
+<tr class="row-odd"><td><p>LogLevel (String)</p></td>
+<td><p>Log level, one of <code class="docutils literal notranslate"><span class="pre">Debug</span></code>, <code class="docutils literal notranslate"><span class="pre">Info</span></code>, <code class="docutils literal notranslate"><span class="pre">Warning</span></code>, <code class="docutils literal notranslate"><span class="pre">Error</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>StatsCollectionIntervalNS (Integer)</p></td>
+<td><p>Interval in which a summary of the data is generated, typically 1s, i.e. 1000000000Ns</p></td>
+</tr>
+<tr class="row-odd"><td><p>StatsHistogramEnabled (Boolean)</p></td>
+<td><p>Decides whether a histogram is written after successful run or not</p></td>
+</tr>
+<tr class="row-even"><td><p>StatsHistogramMinimumNS (Integer)</p></td>
+<td><p>Lower boundary of RTT which is recorded in histogram e.g., 1ms</p></td>
+</tr>
+<tr class="row-odd"><td><p>StatsHistogramMaximumNS (Integer)</p></td>
+<td><p>Upper boundary of RTT which is recorded in histogram e.g., 10ms</p></td>
+</tr>
+<tr class="row-even"><td><p>StatsHistogramFile (String)</p></td>
+<td><p>Path to file where to store the histogram after run</p></td>
+</tr>
+<tr class="row-odd"><td><p>LogViaMQTT (Boolean)</p></td>
+<td><p>Enable and disable MQTT logging</p></td>
+</tr>
+<tr class="row-even"><td><p>LogViaMQTTThreadPriority (Integer)</p></td>
+<td><p>Thread priority for the logging thread, usually low &lt; 7</p></td>
+</tr>
+<tr class="row-odd"><td><p>LogViaMQTTThreadCpu (Integer)</p></td>
+<td><p>Thread CPU affinity</p></td>
+</tr>
+<tr class="row-even"><td><p>LogViaMQTTBrokerIP (IP Address)</p></td>
+<td><p>IP address where MQTT broker is running</p></td>
+</tr>
+<tr class="row-odd"><td><p>LogViaMQTTBrokerPort (Integer)</p></td>
+<td><p>Port used by the MQTT Broker, default value is</p></td>
+</tr>
+<tr class="row-even"><td><p>LogViaMQTTKeepAliveSecs (Integer)</p></td>
+<td><p>Keep alive time for the connection, default value 60s</p></td>
+</tr>
+<tr class="row-odd"><td><p>LogViaMQTTMeasurementName (String)</p></td>
+<td><p>Used to distinguish measurements coming from different machines.</p></td>
+</tr>
+<tr class="row-even"><td><p>DebugStopTraceOnOutlier (Integer)</p></td>
+<td><p>Stop Linux kernel tracing if round trip or oneway time exceeds expected value</p></td>
+</tr>
+<tr class="row-odd"><td><p>DebugStopTraceOnError (Boolean)</p></td>
+<td><p>Stop Linux kernel tracing if error happened (e.g. transmission failure)</p></td>
+</tr>
+<tr class="row-even"><td><p>DebugMonitorMode (Boolean)</p></td>
+<td><p>Monitor mode for Fraunhofer FPGA measurement</p></td>
+</tr>
+<tr class="row-odd"><td><p>DebugMonitorDestination (MAC Address)</p></td>
+<td><p>Destination address of first frame per burst</p></td>
+</tr>
+</tbody>
+</table>
+<p>The possible traffic classes are:</p>
+<ul class="simple">
+<li><p>TsnHigh: TSN Stream High traffic</p></li>
+<li><p>TsnLow: TSN Stream Low traffic</p></li>
+<li><p>Rtc: Real time cyclic traffic</p></li>
+<li><p>Rta: Real time acyclic traffic</p></li>
+<li><p>Dcp: Discovery and basic Configuration Protocol</p></li>
+<li><p>Lldp: Link-Layer Discovery Protocol</p></li>
+<li><p>UdpHigh: Connection traffic Best Effort High</p></li>
+<li><p>UdpLow: Connection traffic Best Effort Low</p></li>
+<li><p>GenericL2: Traffic class to simulate any kind of protocol such as OPC/UA</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Not all traffic class have all options available. For instance, only real time traffic classes such as TSN or
+RT make use of XDP sockets. When the XDP option is enabled the traffic classes utilize <code class="docutils literal notranslate"><span class="pre">AF_XDP</span></code> instead of
+<code class="docutils literal notranslate"><span class="pre">AF_PACKET</span></code> sockets for Ethernet communication.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">GenericL2</span></code> traffic class is not PROFINET specific, but rather used to simulate general purpose Ethernet
+(Layer 2) based protocols such as OPC/UA PubSub. In addition, to the other traffic classes the EtherType is
+configurable.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">XdpBusyPollMode</span></code> option requires Linux kernel &gt;= v6.5. Previous Linux kernel version do not support
+this feature with <code class="docutils literal notranslate"><span class="pre">PREEMPT_RT</span></code> enabled.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <strong>security settings</strong> are only valid for the PROFINET real time traffic
+classes. Furthermore, the Linux RealTime Communication <code class="docutils literal notranslate"><span class="pre">Testbench</span></code> demonstrates only one
+exemplary implementation. The PROFINET security specification is still under
+development. This implementation is to be used only for performance measurements. For
+instance, what impact does real time frame encryption and decryption has on quantity
+structures? Key updates and other mechanisms are not covered.</p>
+</div>
+<p>Sample configuration files are provided for Intel i210, i225/i226 and stmmac.</p>
+<p>Starting point for PROFINET TSN:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/Linutronix/RTC-Testbench/tree/main/tests/profinet">https://github.com/Linutronix/RTC-Testbench/tree/main/tests/profinet</a></p></li>
+</ul>
+<p>Starting point for OPC/UA:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/Linutronix/RTC-Testbench/tree/main/tests/opcua">https://github.com/Linutronix/RTC-Testbench/tree/main/tests/opcua</a></p></li>
+</ul>
+<p>At minimum MAC and IP addresses as well as network interface names have to be adjusted.</p>
+</section>
+<section id="network-interface-configuration">
+<h2>Network interface configuration<a class="headerlink" href="#network-interface-configuration" title="Permalink to this heading"></a></h2>
+<p>The configuration of network interfaces is crucial. Different NICs have
+different capabilities such as queue configuration, routing, Qbv, …  For instance,
+the PROFINET specification specifies which traffic class is transmitted and
+received on which queue. It also defines which Ethernet frames are VLAN tagged
+and which are transmitted untagged. The configuration of all NIC settings are
+either performed by <code class="docutils literal notranslate"><span class="pre">tc</span></code> from <code class="docutils literal notranslate"><span class="pre">iproute2</span></code> package or <code class="docutils literal notranslate"><span class="pre">ethtool</span></code>. That
+depends on the Linux driver implementation.</p>
+<p>The reference applications provides sample scripts in <code class="docutils literal notranslate"><span class="pre">tests/</span></code> folder.</p>
+<p>These scripts configure multiple settings:</p>
+<ul class="simple">
+<li><p>Tx queue assignment</p></li>
+<li><p>Rx queue assignment</p></li>
+<li><p>Qbv schedule</p></li>
+<li><p>IRQ coalescing</p></li>
+<li><p>Threaded NAPI mode</p></li>
+<li><p>IRQ and NAPI thread priorities</p></li>
+</ul>
+<p>All of these settings are required for the PROFINET simulation to work properly.</p>
+</section>
+<section id="udp-communication">
+<h2>UDP communication<a class="headerlink" href="#udp-communication" title="Permalink to this heading"></a></h2>
+<p>The UDP communication relies on standard sockets. It assumes that corresponding VLAN interfaces have
+been setup on the system. VLAN interfaces can be created by multiple ways: NetworkManager, Linux
+Distribution mechanisms or manually.</p>
+<p>Example for manual configuration:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ip<span class="w"> </span>link<span class="w"> </span>add<span class="w"> </span>link<span class="w"> </span>eth0<span class="w"> </span>name<span class="w"> </span>eth0.100<span class="w"> </span><span class="nb">type</span><span class="w"> </span>vlan<span class="w"> </span>id<span class="w"> </span><span class="m">100</span>
+ip<span class="w"> </span>addr<span class="w"> </span>add<span class="w"> </span>XXX<span class="w"> </span>dev<span class="w"> </span>eth0.100
+</pre></div>
+</div>
+<p>Whenever a UDP packet is transmitted or received on a VLAN network interface the kernel will
+automatically add or strip the VLAN tag. The PCP value is derived from the socket priority. This
+mapping between socket priority and PCP values is configurable.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ip<span class="w"> </span>link<span class="w"> </span><span class="nb">set</span><span class="w"> </span>eth0.100<span class="w"> </span><span class="nb">type</span><span class="w"> </span>vlan<span class="w"> </span>egress-qos-map<span class="w"> </span><span class="m">0</span>:0<span class="w"> </span><span class="m">1</span>:1
+</pre></div>
+</div>
+<p>The configured socket priorities have to match <code class="docutils literal notranslate"><span class="pre">UdpHighSocketPriority</span></code> and
+<code class="docutils literal notranslate"><span class="pre">UdpLowSocketPriority</span></code> in the yaml files.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In case the UDP communication does not work check the VLAN interface configurations. In
+case it is still not working check whether the system uses a firewall which filters UDP
+communication on the configured ports.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="security.html" class="btn btn-neutral float-right" title="Security" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, Linutronix GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
