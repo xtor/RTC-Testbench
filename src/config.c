@@ -641,7 +641,11 @@ int config_read_from_file(const char *config_file)
 	if (app_config.application_clock_id != CLOCK_TAI && !base_time_seen) {
 		struct timespec current;
 
-		clock_gettime(app_config.application_clock_id, &current);
+		ret = clock_gettime(app_config.application_clock_id, &current);
+		if (ret) {
+			fprintf(stderr, "CONFIG: clock_gettime() failed: %s!\n", strerror(errno));
+			goto err_parse;
+		}
 		app_config.application_base_start_time_ns = (current.tv_sec + 30) * NSEC_PER_SEC;
 	}
 

@@ -158,7 +158,7 @@ static int generic_l2_gen_and_send_frames(struct thread_context *thread_context,
 	struct timespec tx_time = {};
 	int len, i;
 
-	clock_gettime(app_config.application_clock_id, &tx_time);
+	app_clock_get(&tx_time);
 
 	/* Adjust meta data */
 	for (i = 0; i < num_frames_per_cycle; i++) {

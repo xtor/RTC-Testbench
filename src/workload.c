@@ -12,6 +12,7 @@
 #include "log.h"
 #include "stat.h"
 #include "thread.h"
+#include "utils.h"
 #include "workload.h"
 
 /*
@@ -104,7 +105,7 @@ void *workload_thread_routine(void *data)
 		if (ret == ETIMEDOUT)
 			continue;
 
-		clock_gettime(app_config.application_clock_id, &start_ts);
+		app_clock_get(&start_ts);
 		ret = wl_cfg->workload_function(&thread->instance, wl_cfg->workload_argc,
 						wl_cfg->workload_argv);
 		if (ret)

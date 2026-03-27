@@ -697,7 +697,7 @@ void xdp_gen_and_send_frames(struct xdp_socket *xsk, const struct xdp_gen_config
 		return;
 	}
 
-	clock_gettime(app_config.application_clock_id, &tx_time);
+	app_clock_get(&tx_time);
 
 	for (i = 0; i < xdp->num_frames_per_cycle; ++i) {
 		struct xdp_desc *tx_desc = xsk_ring_prod__tx_desc(&xsk->tx, idx + i);

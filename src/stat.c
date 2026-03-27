@@ -170,7 +170,7 @@ void stat_update(void)
 	bool proceed = false;
 	struct timespec now;
 
-	clock_gettime(app_config.application_clock_id, &now);
+	app_clock_get(&now);
 	curr_time = ts_to_ns(&now);
 
 	if (!last_ts)
@@ -458,7 +458,7 @@ void stat_frames_sent_batch(enum stat_frame_type frame_type, uint64_t cycle_numb
 	     log_stat_user_selected == LOG_TX_TIMESTAMPS) &&
 	    rtt->backlog) {
 		/* Record Tx SW timestamp for the first frame in the cycle */
-		clock_gettime(app_config.application_clock_id, &tx_time);
+		app_clock_get(&tx_time);
 		rtt->backlog[idx].sw_ts = ts_to_ns(&tx_time);
 	}
 
@@ -545,7 +545,7 @@ void stat_frame_received(enum stat_frame_type frame_type, uint64_t cycle_number,
 		    stat_frame_type_to_string(frame_type), cycle_number);
 
 	/* Record Rx timestamp in us */
-	clock_gettime(app_config.application_clock_id, &rx_time);
+	app_clock_get(&rx_time);
 	curr_time = ts_to_ns(&rx_time);
 
 	/* Store RX HW timestamp for ProFirst and ProBatch latency measurement at Mirror */
@@ -767,7 +767,7 @@ void stat_frame_workload(int id, enum stat_frame_type frame_type, uint64_t cycle
 	log_message(LOG_LEVEL_DEBUG, "%s: frame[%" PRIu64 "] workload_complete\n",
 		    stat_frame_type_to_string(frame_type), cycle_number);
 
-	clock_gettime(app_config.application_clock_id, &clk_time);
+	app_clock_get(&clk_time);
 	curr_time = ts_to_ns(&clk_time);
 	start_time = ts_to_ns(&start_ts);
 

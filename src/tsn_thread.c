@@ -123,7 +123,7 @@ static int tsn_gen_and_send_frames(struct thread_context *thread_context, int so
 	struct timespec tx_time = {};
 	int len, i;
 
-	clock_gettime(app_config.application_clock_id, &tx_time);
+	app_clock_get(&tx_time);
 
 	for (i = 0; i < tsn_config->num_frames_per_cycle; i++) {
 		struct prepare_frame_config frame_config;
