@@ -205,7 +205,7 @@ int receive_profinet_frame(void *data, unsigned char *frame_data, size_t len)
 			&rt->meta_data, class_config->num_frames_per_cycle);
 
 		tx_timestamp = meta_data_to_tx_timestamp(&rt->meta_data);
-		set_mirror_tx_timestamp(&rt->meta_data);
+		set_mirror_tx_timestamp_est(&rt->meta_data);
 
 	} else if (class_config->security_mode == SECURITY_MODE_AO) {
 
@@ -244,7 +244,7 @@ int receive_profinet_frame(void *data, unsigned char *frame_data, size_t len)
 				    "%sRx: frame[%" PRIu64 "] Not authentificated\n",
 				    thread_context->traffic_class, sequence_counter);
 
-		set_mirror_tx_timestamp(&srt->meta_data);
+		set_mirror_tx_timestamp_est(&srt->meta_data);
 
 		security_encrypt(security_context, NULL, 0, begin_of_aad_data, size_of_aad_data,
 				 (unsigned char *)&iv, NULL, begin_of_security_checksum);
@@ -293,7 +293,7 @@ int receive_profinet_frame(void *data, unsigned char *frame_data, size_t len)
 		/* plaintext points to the decrypted payload */
 		p = plaintext;
 
-		set_mirror_tx_timestamp(&srt->meta_data);
+		set_mirror_tx_timestamp_est(&srt->meta_data);
 
 		security_encrypt(security_context, thread_context->payload_pattern,
 				 thread_context->payload_pattern_length, begin_of_aad_data,

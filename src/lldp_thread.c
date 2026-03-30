@@ -39,7 +39,7 @@ static void lldp_build_frame_from_rx(unsigned char *frame_data, const unsigned c
 
 	/* One task: Set the tx timestamp. */
 	meta = (struct reference_meta_data *)(frame_data + sizeof(*eth));
-	set_mirror_tx_timestamp(meta);
+	set_mirror_tx_timestamp_est(meta);
 }
 
 static void lldp_initialize_frame(struct thread_context *thread_context, unsigned char *frame_data,

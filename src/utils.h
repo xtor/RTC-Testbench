@@ -154,12 +154,18 @@ static inline void app_clock_get(struct timespec *time)
 	}
 }
 
-static inline void set_mirror_tx_timestamp(struct reference_meta_data *meta)
+static inline void set_mirror_tx_timestamp_est(struct reference_meta_data *meta)
 {
 	struct timespec now;
 
 	app_clock_get(&now);
 
+	/*
+	 * This is rather an estimation for the Tx timestamp. In case we do use PROFINET security,
+	 * the Tx timestamp is embedded into the frame upon *receive*, because the Rx thread calls
+	 * OpenSSL to authenticate and encrypt the frame afterwards. This means, we cannot update
+	 * the Tx timestamp on Tx without breaking the checksums etc.
+	 */
 	tx_timestamp_to_meta_data(meta,
 				  ts_to_ns(&now) + (app_config.application_tx_base_offset_ns -
 						    app_config.application_rx_base_offset_ns));

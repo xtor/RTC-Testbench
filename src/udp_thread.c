@@ -286,7 +286,7 @@ static void *udp_rx_thread_routine(void *data)
 				meta_data_to_sequence_counter(meta, num_frames_per_cycle);
 
 			tx_timestamp = meta_data_to_tx_timestamp(meta);
-			set_mirror_tx_timestamp(meta);
+			set_mirror_tx_timestamp_est(meta);
 
 			out_of_order = sequence_counter != rx_sequence_counter;
 			payload_mismatch = memcmp(frame + sizeof(struct reference_meta_data),

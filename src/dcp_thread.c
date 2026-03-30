@@ -79,7 +79,7 @@ static void dcp_build_frame_from_rx(struct thread_context *thread_context,
 	eth_new->vlan_encapsulated_proto = htons(ETH_P_PROFINET_RT);
 
 	rt = (struct profinet_rt_header *)(new_frame + sizeof(*eth_new));
-	set_mirror_tx_timestamp(&rt->meta_data);
+	set_mirror_tx_timestamp_est(&rt->meta_data);
 }
 
 static int dcp_send_messages(struct thread_context *thread_context, int socket_fd,

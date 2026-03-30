@@ -497,7 +497,7 @@ static int generic_l2_rx_frame(void *data, unsigned char *frame_data, size_t len
 	sequence_counter = meta_data_to_sequence_counter(&l2->meta_data, num_frames_per_cycle);
 
 	tx_timestamp = meta_data_to_tx_timestamp(&l2->meta_data);
-	set_mirror_tx_timestamp(&l2->meta_data);
+	set_mirror_tx_timestamp_est(&l2->meta_data);
 
 	xdp_get_timestamp_metadata(frame_data, &rx_hw_timestamp, &rx_sw_timestamp);
 	out_of_order = sequence_counter != thread_context->rx_sequence_counter;
