@@ -66,7 +66,8 @@ static void stat_reset(struct statistics *stats)
 {
 	memset(stats, 0, sizeof(struct statistics));
 	stats->round_trip_min = UINT64_MAX;
-	stats->oneway_min = UINT64_MAX;
+	stats->oneway_min = INT64_MAX;
+	stats->oneway_max = INT64_MIN;
 	stats->rx_min = UINT64_MAX;
 	stats->rx_hw2xdp_min = UINT64_MAX;
 	stats->rx_xdp2app_min = UINT64_MAX;
@@ -230,6 +231,12 @@ static inline void stat_update_min_max(uint64_t new_value, uint64_t *min, uint64
 	*min = (new_value < *min) ? new_value : *min;
 }
 
+static inline void stat_update_min_max_s(int64_t new_value, int64_t *min, int64_t *max)
+{
+	*max = (new_value > *max) ? new_value : *max;
+	*min = (new_value < *min) ? new_value : *min;
+}
+
 static inline size_t get_first_frame_backlog_idx(uint64_t cycle_number,
 						 enum stat_frame_type frame_type,
 						 size_t backlog_len)
@@ -241,7 +248,7 @@ static inline size_t get_first_frame_backlog_idx(uint64_t cycle_number,
 }
 
 static bool stat_frame_received_common(struct statistics *stat, enum stat_frame_type frame_type,
-				       uint64_t rt_time, uint64_t oneway_time, bool out_of_order,
+				       uint64_t rt_time, int64_t oneway_time, bool out_of_order,
 				       bool payload_mismatch, bool frame_id_mismatch,
 				       uint64_t rx_hw2app_time, uint64_t rx_hw2xdp_time,
 				       uint64_t rx_xdp2app_time)
@@ -261,7 +268,7 @@ static bool stat_frame_received_common(struct statistics *stat, enum stat_frame_
 		stat->round_trip_avg = stat->round_trip_sum / (double)stat->round_trip_count;
 	}
 
-	stat_update_min_max(oneway_time, &stat->oneway_min, &stat->oneway_max);
+	stat_update_min_max_s(oneway_time, &stat->oneway_min, &stat->oneway_max);
 
 	if (stat_frame_type_is_real_time(frame_type) && oneway_time > rtt_expected_rt_limit / 2) {
 		stat->oneway_outliers++;
@@ -333,10 +340,10 @@ static void stat_frame_proc_batch_common(struct statistics *stat, enum stat_fram
 
 #if defined(WITH_MQTT)
 static void stat_frame_received_per_period(enum stat_frame_type frame_type, uint64_t curr_time,
-					   uint64_t rt_time, uint64_t oneway_time,
-					   bool out_of_order, bool payload_mismatch,
-					   bool frame_id_mismatch, uint64_t rx_hw2app_time,
-					   uint64_t rx_hw2xdp_time, uint64_t rx_xdp2app_time)
+					   uint64_t rt_time, int64_t oneway_time, bool out_of_order,
+					   bool payload_mismatch, bool frame_id_mismatch,
+					   uint64_t rx_hw2app_time, uint64_t rx_hw2xdp_time,
+					   uint64_t rx_xdp2app_time)
 {
 	struct statistics *stat_per_period = &statistics_per_period[frame_type];
 
@@ -533,13 +540,13 @@ void stat_frame_received(enum stat_frame_type frame_type, uint64_t cycle_number,
 			 bool payload_mismatch, bool frame_id_mismatch, uint64_t tx_timestamp,
 			 uint64_t rx_hw_timestamp, uint64_t rx_sw_timestamp)
 {
+	uint64_t rt_time = 0, curr_time, rx_hw2app_time, rx_hw2xdp_time, rx_xdp2app_time;
 	struct round_trip_context *rtt = &round_trip_contexts[frame_type];
 	const bool histogram = app_config.stats_histogram_enabled;
 	struct statistics *stat = &global_statistics[frame_type];
-	uint64_t rt_time = 0, curr_time, oneway_time, rx_hw2app_time, rx_hw2xdp_time,
-		 rx_xdp2app_time;
 	struct timespec rx_time = {};
 	bool outlier = false;
+	int64_t oneway_time;
 
 	log_message(LOG_LEVEL_DEBUG, "%s: frame[%" PRIu64 "] received\n",
 		    stat_frame_type_to_string(frame_type), cycle_number);
@@ -601,7 +608,7 @@ void stat_frame_received(enum stat_frame_type frame_type, uint64_t cycle_number,
 	}
 
 	/* Calc Oneway Time */
-	oneway_time = curr_time - tx_timestamp;
+	oneway_time = (int64_t)curr_time - (int64_t)tx_timestamp;
 	oneway_time /= 1000;
 
 	if (rx_hw_timestamp != 0 && rx_sw_timestamp != 0) {
@@ -803,6 +810,15 @@ static int append_jlog_u64(char **buffer, size_t *len, const char *stat, uint64_
 	return snprintf_err_handling(buffer, len, ret);
 }
 
+static int append_jlog_i64(char **buffer, size_t *len, const char *stat, int64_t value)
+{
+	int ret;
+
+	ret = snprintf(*buffer, *len, "\"%s\": %" PRIi64 ",\n", stat, value);
+
+	return snprintf_err_handling(buffer, len, ret);
+}
+
 static int last_jlog_u64(char **buffer, size_t *len, const char *stat, uint64_t value)
 {
 	int ret;
@@ -918,11 +934,11 @@ int stat_to_json(char *json, size_t len, enum stat_frame_type frame_type,
 	if (ret)
 		return ret;
 
-	ret = append_jlog_u64(&json, &len, "OnewayMin", stat->oneway_min);
+	ret = append_jlog_i64(&json, &len, "OnewayMin", stat->oneway_min);
 	if (ret)
 		return ret;
 
-	ret = append_jlog_u64(&json, &len, "OnewayMax", stat->oneway_max);
+	ret = append_jlog_i64(&json, &len, "OnewayMax", stat->oneway_max);
 	if (ret)
 		return ret;
 
