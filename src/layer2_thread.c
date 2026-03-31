@@ -131,8 +131,12 @@ static int generic_l2_send_frames(struct thread_context *thread_context, unsigne
 	size_t frame_length;
 	int len, i;
 
-	/* Send it */
+	/* Adjust meta data */
 	frame_length = l2_config->frame_length;
+	set_mirror_tx_timestamp(l2_config, frame_data, frame_length, num_frames,
+				thread_context->meta_data_offset);
+
+	/* Send it */
 	len = generic_l2_send_messages(thread_context, socket_fd, destination, frame_data,
 				       num_frames, duration);
 

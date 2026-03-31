@@ -110,6 +110,10 @@ static int dcp_send_frames(struct thread_context *thread_context, unsigned char 
 	const struct traffic_class_config *dcp_config = thread_context->conf;
 	int len, i;
 
+	/* Adjust meta data */
+	set_mirror_tx_timestamp(dcp_config, frame_data, dcp_config->frame_length, num_frames,
+				thread_context->meta_data_offset);
+
 	/* Send them */
 	len = dcp_send_messages(thread_context, socket_fd, destination, frame_data, num_frames);
 

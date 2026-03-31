@@ -171,6 +171,26 @@ static inline void set_mirror_tx_timestamp_est(struct reference_meta_data *meta)
 						    app_config.application_rx_base_offset_ns));
 }
 
+static inline void set_mirror_tx_timestamp(const struct traffic_class_config *conf,
+					   unsigned char *frame_data, size_t frame_size,
+					   size_t num_frames, uint32_t meta_data_offset)
+{
+	struct timespec tx_time;
+
+	/* Only update for non-secure frames. See comment in set_mirror_tx_timestamp_est(). */
+	if (conf->security_mode != SECURITY_MODE_NONE)
+		return;
+
+	app_clock_get(&tx_time);
+	for (int i = 0; i < (int)num_frames; i++) {
+		unsigned char *data = frame_data + i * frame_size;
+		struct reference_meta_data *meta_data;
+
+		meta_data = (struct reference_meta_data *)(data + meta_data_offset);
+		tx_timestamp_to_meta_data(meta_data, ts_to_ns(&tx_time));
+	}
+}
+
 static inline uint64_t get_sequence_counter(const unsigned char *frame_data,
 					    uint32_t meta_data_offset, size_t num_frames_per_cycle)
 {

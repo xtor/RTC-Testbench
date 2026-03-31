@@ -91,6 +91,10 @@ static int rtc_send_frames(struct thread_context *thread_context, unsigned char 
 	const struct traffic_class_config *rtc_config = thread_context->conf;
 	int len, i;
 
+	/* Adjust meta data */
+	set_mirror_tx_timestamp(rtc_config, frame_data, rtc_config->frame_length, num_frames,
+				thread_context->meta_data_offset);
+
 	/* Send it */
 	len = rtc_send_messages(thread_context, socket_fd, destination, frame_data, num_frames);
 

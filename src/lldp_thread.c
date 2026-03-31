@@ -116,6 +116,10 @@ static int lldp_send_frames(struct thread_context *thread_context, unsigned char
 	const struct traffic_class_config *lldp_config = thread_context->conf;
 	int len, i;
 
+	/* Adjust meta data */
+	set_mirror_tx_timestamp(lldp_config, frame_data, lldp_config->frame_length, num_frames,
+				thread_context->meta_data_offset);
+
 	/* Send them */
 	len = lldp_send_messages(thread_context, socket_fd, destination, frame_data, num_frames);
 
