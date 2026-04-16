@@ -36,8 +36,20 @@ INTERFACE=$1
 pkill ptp4l || true
 pkill phc2sys || true
 
+# Build phc2sys with support for CLOCK_AUX
+if ! [ -d linuxptp ]; then
+  git clone https://github.com/mlichvar/linuxptp.git
+  pushd linuxptp
+  git checkout staging
+  make -j$(nproc)
+  popd
+fi
+
+# Set NTP time into PHC
+phc_ctl ${INTERFACE} set
+
 # Start ptp with 802.1AS-2011 endstation profile
-ptp4l -2 -H -i ${INTERFACE} --socket_priority=4 --tx_timestamp_timeout=40 -f /etc/gPTP.cfg &
+linuxptp/ptp4l -2 -H -i ${INTERFACE} --socket_priority=4 --tx_timestamp_timeout=40 -f /etc/gPTP.cfg &
 
 # Wait for ptp4l
 sleep 10
@@ -46,6 +58,6 @@ sleep 10
 echo 1 >/sys/kernel/time/aux_clocks/0/aux_clock_enable
 
 # Synchronize CLOCK_AUX0 to network time
-phc2sys -s ${INTERFACE} -c CLOCK_AUX0 --step_threshold=1 --transportSpecific=1 -w &
+linuxptp/phc2sys -s ${INTERFACE} -c CLOCK_AUX0 --step_threshold=1 --transportSpecific=1 -w &
 
 exit 0
