@@ -6,20 +6,20 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Test runs &mdash; Linux RealTime Communication Testbench v5.3 documentation</title>
+  <title>Test runs &mdash; Linux RealTime Communication Testbench v5.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b27cedc7"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=79f57d0a"></script>
       <script src="_static/doctools.js?v=888ff710"></script>
       <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Wireshark" href="wireshark.html" />
+    <link rel="next" title="Real Time Compute Workloads" href="workload.html" />
     <link rel="prev" title="Histograms" href="histogram.html" /> 
 </head>
 
@@ -61,6 +61,12 @@
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 </ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="statistics.html">Statistics</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="processing_latency.html">Processing Latency</a></li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="security.html">Security</a></li>
 </ul>
 <ul>
@@ -80,12 +86,16 @@
 <li class="toctree-l3"><a class="reference internal" href="#profinet-rt">PROFINET RT</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#netload">Netload</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#busypolling">Busypolling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#working-clock">Working Clock</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tested-hardware">Tested Hardware</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#switches">Switches</a></li>
 </ul>
 </li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="workload.html">Real Time Compute Workloads</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="wireshark.html">Wireshark</a></li>
@@ -161,11 +171,11 @@ host2:<span class="w"> </span>journalctl<span class="w"> </span>-f<span class="w
 <div class="literal-block-wrapper docutils container" id="id2">
 <div class="code-block-caption"><span class="caption-text">Configure traffic flow for network interface on both machines</span><a class="headerlink" href="#id2" title="Permalink to this code"></a></div>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>host1:<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>tests/profinet
-host1:<span class="w"> </span>./flow_cml.sh<span class="w"> </span>enp3s0
+host1:<span class="w"> </span>./flow.sh<span class="w"> </span>enp3s0
 host1:<span class="w"> </span>journalctl<span class="w"> </span>-f<span class="w">               </span><span class="c1"># Verify that PTP is running and stable</span>
 
 host2:<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>tests/profinet
-host2:<span class="w"> </span>./flow_cml.sh<span class="w"> </span>enp3s0
+host2:<span class="w"> </span>./flow.sh<span class="w"> </span>enp3s0
 host2:<span class="w"> </span>journalctl<span class="w"> </span>-f<span class="w">               </span><span class="c1"># Verify that PTP is running and stable</span>
 </pre></div>
 </div>
@@ -178,7 +188,7 @@ host2:<span class="w"> </span>journalctl<span class="w"> </span>-f<span class="w
 <div class="code-block-caption"><span class="caption-text">Start mirror application on second device</span><a class="headerlink" href="#id3" title="Permalink to this code"></a></div>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>host2:<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>tests/profinet
 host2:<span class="w"> </span>cp<span class="w"> </span>../../build/xdp_kern_*.o<span class="w"> </span>.
-host2:<span class="w"> </span>../../build/mirror<span class="w"> </span>-c<span class="w"> </span>mirror_vid100_cml.yaml
+host2:<span class="w"> </span>../../build/mirror<span class="w"> </span>-c<span class="w"> </span>mirror.yaml
 host2:<span class="w"> </span>tail<span class="w"> </span>-f<span class="w"> </span>/var/log/mirror_vid100.log<span class="w">           </span><span class="c1"># Verify that mirror application runs</span>
 </pre></div>
 </div>
@@ -190,7 +200,7 @@ host2:<span class="w"> </span>tail<span class="w"> </span>-f<span class="w"> </s
 <div class="code-block-caption"><span class="caption-text">Start reference application on first device</span><a class="headerlink" href="#id4" title="Permalink to this code"></a></div>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>host1:<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>tests/profinet
 host1:<span class="w"> </span>cp<span class="w"> </span>../../build/xdp_kern_*.o<span class="w"> </span>.
-host1:<span class="w"> </span>../../build/reference<span class="w"> </span>-c<span class="w"> </span>reference_vid100_cml.yaml
+host1:<span class="w"> </span>../../build/reference<span class="w"> </span>-c<span class="w"> </span>reference.yaml
 host1:<span class="w"> </span>tail<span class="w"> </span>-f<span class="w"> </span>/var/log/reference_vid100.log<span class="w">              </span><span class="c1"># Check statistics</span>
 </pre></div>
 </div>
@@ -642,6 +652,36 @@ is designed to test busy polling with AF_XDP sockets.</p>
 <code class="docutils literal notranslate"><span class="pre">tests/busypolling/</span></code>.</p>
 <p>Hardware: Intel CPU with Intel i225/i226</p>
 </section>
+<section id="working-clock">
+<h3>Working Clock<a class="headerlink" href="#working-clock" title="Permalink to this heading"></a></h3>
+<p>IEEE 60802 (the industrial TSN profile for automation) defines at least two time domains:</p>
+<ul class="simple">
+<li><p><strong>Global time</strong>: Is a global time domain e.g., based on UTC. It is used to correlate events and
+for logging and diagnosis. Can be distributed by NTP or PTP.</p></li>
+<li><p><strong>Working clock</strong>: This is a high precision time domain used for scheduling and packet
+transmission inside a TSN network. It is not necessarily based on UTC, but rather starts at
+zero. It is distributed by gPTP.</p></li>
+</ul>
+<p>In this test case, the following Linux clocks are involved:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">CLOCK_REALTIME</span></code>, <code class="docutils literal notranslate"><span class="pre">CLOCK_TAI</span></code>: Is set by NTP e.g., chrony.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CLOCK_AUX0</span></code>: Is set by <code class="docutils literal notranslate"><span class="pre">phc2sys</span></code> from network gPTP time.</p></li>
+</ul>
+<p>Both clocks are completely independent from each other. The Testbench applications run on
+<code class="docutils literal notranslate"><span class="pre">CLOCK_AUX0</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">phc2sys</span></code> requires additional patches to use <code class="docutils literal notranslate"><span class="pre">CLOCK_AUX</span></code>. The patches can be found
+here: <a class="reference external" href="https://github.com/mlichvar/linuxptp/tree/staging">https://github.com/mlichvar/linuxptp/tree/staging</a>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Linux kernel does not support <code class="docutils literal notranslate"><span class="pre">clock_nanosleep(2)</span></code> for <code class="docutils literal notranslate"><span class="pre">CLOCK_AUX</span></code> yet. To run
+this test case successfully we have to wait for Linux &gt;= v7.1.</p>
+</div>
+<p>All required configuration files and scripts are located in <code class="docutils literal notranslate"><span class="pre">tests/working_clock/</span></code>.</p>
+<p>Hardware: Intel CPU with Intel i225/i226.</p>
+</section>
 </section>
 <section id="tested-hardware">
 <h2>Tested Hardware<a class="headerlink" href="#tested-hardware" title="Permalink to this heading"></a></h2>
@@ -680,13 +720,13 @@ confuse the applications and the switches. Still LLDP can be enabled in the whol
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="histogram.html" class="btn btn-neutral float-left" title="Histograms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="wireshark.html" class="btn btn-neutral float-right" title="Wireshark" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="workload.html" class="btn btn-neutral float-right" title="Real Time Compute Workloads" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022-2025, Linutronix GmbH.</p>
+    <p>&#169; Copyright 2022-2026, Linutronix GmbH.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

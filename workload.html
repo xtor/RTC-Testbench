@@ -1,0 +1,323 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real Time Compute Workloads &mdash; Linux RealTime Communication Testbench v5.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=79f57d0a"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Wireshark" href="wireshark.html" />
+    <link rel="prev" title="Test runs" href="test.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Linux RealTime Communication Testbench
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribution.html">Contribution</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Build</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="statistics.html">Statistics</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="processing_latency.html">Processing Latency</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="security.html">Security</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="mqtt.html">MQTT and Grafana Integration</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="histogram.html">Histograms</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="test.html">Test runs</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Real Time Compute Workloads</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#workload-integration">Workload Integration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specifying-a-workload">Specifying a workload</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#pointer-chasing-workload">Pointer Chasing Workload</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#core-concept">Core Concept</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#key-components">Key Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#assembly-implementation">Assembly Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ptr-chase-setup-parameters">ptr_chase_setup parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-rtc-testbench-configuration-file-for-pointer-chasing">Example RTC-Testbench configuration file for pointer chasing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-instructions">Build Instructions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wireshark.html">Wireshark</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">Debug</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="qa.html">Quality Assurance</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Linux RealTime Communication Testbench</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Real Time Compute Workloads</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/workload.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="real-time-compute-workloads">
+<h1>Real Time Compute Workloads<a class="headerlink" href="#real-time-compute-workloads" title="Permalink to this heading"></a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
+<p>The RTC-Testbench simulates a PLC by periodically sending and receiving Ethernet frames. The
+workload integration allows to execute a compute workload on the host during the available time
+between Rx and Tx. This allows to simulate the compute part in addition to the networking.</p>
+</section>
+<section id="workload-integration">
+<h2>Workload Integration<a class="headerlink" href="#workload-integration" title="Permalink to this heading"></a></h2>
+<p>This section describes the requirements for implementing a workload that can be dynamically loaded
+into the RTC-Testbench framework.</p>
+<section id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h3>
+<p>To be compatible with RTC-Testbench, a workload must:</p>
+<ol class="arabic simple">
+<li><p>Be compiled as a shared object with position independent code (using the <code class="docutils literal notranslate"><span class="pre">-fPIC</span></code> GCC compiler
+flag).</p></li>
+<li><p>Implement a runtime function to be called each cycle after completion of the network RX routine.</p></li>
+<li><p>(Optional) Implement a setup function to perform initialization tasks, such as memory allocation,
+to avoid doing them in the time critical path.</p></li>
+</ol>
+</section>
+<section id="specifying-a-workload">
+<h3>Specifying a workload<a class="headerlink" href="#specifying-a-workload" title="Permalink to this heading"></a></h3>
+<p>The following options are used to configure a RX workload:</p>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Traffic class configuration options</span><a class="headerlink" href="#id1" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 33.3%" />
+<col style="width: 66.7%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>&lt;Class&gt;RxWorkloadEnabled (Boolean)</p></td>
+<td><p>Enable/disable workload execution for TSN High traffic class</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;RxWorkloadFile (String)</p></td>
+<td><p>Path to the shared library containing the workload</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;RxWorkloadSetupFunction (String)</p></td>
+<td><p>Name of the setup function to call during initialization</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;RxWorkloadSetupArguments (String)</p></td>
+<td><p>Arguments passed to the setup function (space-separated string)</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;RxWorkloadFunction (String)</p></td>
+<td><p>Name of the runtime function called each cycle</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;RxWorkloadArguments (String)</p></td>
+<td><p>Arguments passed to the runtime function</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;RxWorkloadPrewarm (Boolean)</p></td>
+<td><p>Execute workload immediately when threads spawn (true) or wait for network traffic (false)</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;RxWorkloadSkipCount (Integer)</p></td>
+<td><p>Skip min/max statistics and outlier updates for the first N workload iterations</p></td>
+</tr>
+<tr class="row-even"><td><p>&lt;Class&gt;RxWorkloadThreadCpu (Integer)</p></td>
+<td><p>Comma separated list of CPU core numbers to pin the workload threads to</p></td>
+</tr>
+<tr class="row-odd"><td><p>&lt;Class&gt;RxWorkloadThreadPriority (Integer)</p></td>
+<td><p>Real-time thread priority (1-99, higher values = higher priority)</p></td>
+</tr>
+</tbody>
+</table>
+<p>The RX workload feature is implemented for <code class="docutils literal notranslate"><span class="pre">TsnHigh</span></code>, <code class="docutils literal notranslate"><span class="pre">Rtc</span></code> and <code class="docutils literal notranslate"><span class="pre">GenericL2</span></code> traffic classes.</p>
+</section>
+</section>
+<section id="pointer-chasing-workload">
+<h2>Pointer Chasing Workload<a class="headerlink" href="#pointer-chasing-workload" title="Permalink to this heading"></a></h2>
+<section id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h3>
+<p>The pointer chasing workload is designed to stress the CPU’s memory hierarchy by following a chain
+of pointers through memory in a pseudo-random pattern.</p>
+</section>
+<section id="core-concept">
+<h3>Core Concept<a class="headerlink" href="#core-concept" title="Permalink to this heading"></a></h3>
+<p>The workload creates a linked list where nodes are distributed randomly throughout a large memory
+buffer. When executed, the CPU must follow pointer chains, causing cache misses and memory stalls.
+The buffer and span sizes can be customized to target specific hierarchies in the cache subsystem,
+or sized sufficiently large for main memory.</p>
+</section>
+<section id="key-components">
+<h3>Key Components<a class="headerlink" href="#key-components" title="Permalink to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Data Structure (ptr_node)</strong></p>
+<ul class="simple">
+<li><p>64-byte aligned union containing a pointer to the next node and a value</p></li>
+</ul>
+</li>
+<li><p><strong>Setup Phase (ptr_chase_setup)</strong></p>
+<ul class="simple">
+<li><p>Parses buffer size and span size from command line arguments</p></li>
+<li><p>Allocates memory and creates a randomized linked list</p></li>
+<li><p>Buffer size: Total memory allocated</p></li>
+<li><p>Span size: Used in conjunction with <code class="docutils literal notranslate"><span class="pre">CACHE_LINE_SIZE</span></code> to determine how many linked list nodes
+are traversed</p></li>
+</ul>
+</li>
+<li><p><strong>Linked List Generation (create_linked_list)</strong></p>
+<ul class="simple">
+<li><p>Creates a pseudo-random chain of pointers within the specified span</p></li>
+<li><p>Uses a seeded random number generator for reproducible results</p></li>
+<li><p>Ensures each node is visited exactly once</p></li>
+</ul>
+</li>
+<li><p><strong>Execution (run_ptr_chasing)</strong>
+- Follows the pointer chain using optimized assembly code
+- Assembly loop continues until reaching a NULL pointer</p></li>
+</ol>
+</section>
+<section id="assembly-implementation">
+<h3>Assembly Implementation<a class="headerlink" href="#assembly-implementation" title="Permalink to this heading"></a></h3>
+<p>The core loop is implemented in assembly for precise control:</p>
+<div class="highlight-NASM notranslate"><div class="highlight"><pre><span></span><span class="nl">__chasing_code_loop:</span>
+<span class="w">    </span><span class="nf">mov</span><span class="w"> </span><span class="p">(</span><span class="o">%</span><span class="nb">rax</span><span class="p">),</span><span class="w"> </span><span class="o">%</span><span class="nb">rax</span><span class="w">        </span><span class="c1">; Load next pointer</span>
+<span class="w">    </span><span class="nf">test</span><span class="w"> </span><span class="o">%</span><span class="nb">rax</span><span class="p">,</span><span class="w"> </span><span class="o">%</span><span class="nb">rax</span><span class="w">         </span><span class="c1">; Check if NULL</span>
+<span class="w">    </span><span class="nf">jne</span><span class="w"> </span><span class="nv">__chasing_code_loop</span><span class="w"> </span><span class="c1">; Continue if not NULL</span>
+<span class="w">    </span><span class="nf">ret</span><span class="w">                     </span><span class="c1">; Return when done</span>
+</pre></div>
+</div>
+</section>
+<section id="ptr-chase-setup-parameters">
+<h3>ptr_chase_setup parameters<a class="headerlink" href="#ptr-chase-setup-parameters" title="Permalink to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">ptr_chase_setup</span></code> function expects two arguments:</p>
+<ul class="simple">
+<li><p><strong>Buffer Size</strong>: Total memory allocated (in hexadecimal)</p></li>
+<li><p><strong>Span Size</strong>: Used in conjunction with <code class="docutils literal notranslate"><span class="pre">CACHE_LINE_SIZE</span></code> to determine how many linked list
+nodes are traversed. As span size approaches buffer size, it will take longer to create the
+LinkedList. Recommended to keep buffer size slightly larger than span size.</p></li>
+</ul>
+<p>In the <code class="docutils literal notranslate"><span class="pre">tests/busypolling_1ms_rtworkload</span></code> example, the following values are used:</p>
+<ul class="simple">
+<li><p>Buffer size: 0x4A4000 (~4.6MB total allocation)</p></li>
+<li><p>Span size: 0x129000 (~1.2MB used for linked list)</p></li>
+</ul>
+</section>
+<section id="example-rtc-testbench-configuration-file-for-pointer-chasing">
+<h3>Example RTC-Testbench configuration file for pointer chasing<a class="headerlink" href="#example-rtc-testbench-configuration-file-for-pointer-chasing" title="Permalink to this heading"></a></h3>
+<p>See <code class="docutils literal notranslate"><span class="pre">tests/busypolling_1ms_rtworkload/mirror.yaml</span></code>.</p>
+</section>
+<section id="build-instructions">
+<h3>Build Instructions<a class="headerlink" href="#build-instructions" title="Permalink to this heading"></a></h3>
+<p>From the main project build directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>pointer_chasing<span class="w">                   </span><span class="c1"># Build shared library</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="test.html" class="btn btn-neutral float-left" title="Test runs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wireshark.html" class="btn btn-neutral float-right" title="Wireshark" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2026, Linutronix GmbH.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

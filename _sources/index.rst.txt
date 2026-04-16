@@ -46,6 +46,16 @@ Welcome to Linux RealTime Communication Testbench's documentation!
 .. toctree::
    :maxdepth: 2
 
+   statistics.rst
+
+.. toctree::
+   :maxdepth: 2
+
+   processing_latency.rst
+
+.. toctree::
+   :maxdepth: 2
+
    security.rst
 
 .. toctree::
@@ -62,6 +72,11 @@ Welcome to Linux RealTime Communication Testbench's documentation!
    :maxdepth: 2
 
    test.rst
+
+.. toctree::
+   :maxdepth: 2
+
+   workload.rst
 
 .. toctree::
    :maxdepth: 2
