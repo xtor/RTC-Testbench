@@ -139,6 +139,12 @@ function preconfigure_interface () {
     sched-entry S 0x0F 1000000000 \
     flags 0x02
 
+  # Disable Interrupt Coalescing (rx disables both rx and tx as it works at pairs)
+  sudo ethtool -C "${INTERFACE}" rx-usecs 0
+
+  # Enable Threaded NAPI
+  echo 1 | sudo tee /sys/class/net/${INTERFACE}/threaded > /dev/null
+
 }
 
 
@@ -175,7 +181,7 @@ function platform_reset () {
 
   fi
 
-  sleep 30
+  sleep 10
 }
 
 
