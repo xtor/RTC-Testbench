@@ -55,6 +55,9 @@ end-to-end time synchronization across network and SoC:
 
 ## Usage
 
+### Step 1: Set up time synchronization across the network
+
+Run the helper scripts and functions on mirror and reference nodes:
 ```
 # Remove interferring services and stale processes from previous executions
 platform/cleanup.sh
@@ -64,7 +67,15 @@ platform/reset.sh
 
 # Start PTP with multiple time domains, one command per console
 # Adjust the interface and the vclock index for the CMLDS and GT instances
-source ptp/ptp.sh && run_cmlds enp2s0 2
-source ptp/ptp.sh && run_gt    enp2s0 2
-source ptp/ptp.sh && run_wc    enp2s0 0
+source ptp/ptp.sh && run_cmlds enp2s0
+source ptp/ptp.sh && run_gt    enp2s0 [master|slave]
+source ptp/ptp.sh && run_wc    enp2s0 bmca
 ```
+
+The CMLDS instance just measures peer delay and does not have master or
+follower roles.
+
+The Working Clock instance may run with the BMCA in this example.
+
+The Global Time instance must run with predefined roles in order to correctly
+integrate with the time synchronization pieces at the host level.
