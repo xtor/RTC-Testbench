@@ -210,7 +210,7 @@ function platform_reset () {
     reset_auxclocks &
     
     reset_interface ${INTERFACE}
-    reconfigure_interface ${INTERFACE}
+    preconfigure_interface ${INTERFACE}
     
     reset_vclocks ${INTERFACE}
 
