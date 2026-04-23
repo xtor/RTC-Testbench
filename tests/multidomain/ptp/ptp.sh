@@ -92,16 +92,16 @@ function run_cmlds () {
 
 	ROLE="cmlds"
 
-	PHC_INDEX=$(first_virtual_phc_index ${INTERFACE})
-	DOMAIN=0
-	CLOCK_IDENTITY="$(clock_identity ${INTERFACE} ${PHC_INDEX} ${ROLE})"
-
 	# Create a single vClock
 	# E.g. ptp0 for PHC 0
 	PTP_DEVICE="$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/)"
 	echo 0 | sudo tee /sys/class/net/${INTERFACE}/device/ptp/${PTP_DEVICE}/n_vclocks > /dev/null
 	echo 1 | sudo tee /sys/class/net/${INTERFACE}/device/ptp/${PTP_DEVICE}/n_vclocks > /dev/null
 	sleep 2
+
+	PHC_INDEX=$(first_virtual_phc_index ${INTERFACE})
+	DOMAIN=0
+	CLOCK_IDENTITY="$(clock_identity ${INTERFACE} ${PHC_INDEX} ${ROLE})"
 
 	# Adjust default LinuxPTP config files
         TEMPLATE="${CONFIGS}/gPTP_CMLDS_server.cfg"
@@ -182,7 +182,5 @@ function run_wc () {
 	RTPRIO="80"
         sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
 	${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m | sudo tee /var/log/ptp4l-${INTERFACE}-wc-${ROLE}.log
-
-
 
 }
