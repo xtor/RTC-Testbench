@@ -57,7 +57,10 @@ end-to-end time synchronization across network and SoC:
 
 ### Step 1: Set up time synchronization across the network
 
-Run the helper scripts and functions on mirror and reference nodes:
+Run the helper scripts and functions on mirror and reference nodes. Run each
+command on both ends, let it settle, and then move to the next one.
+
+On the mirror node:
 ```
 # Remove interferring services and stale processes from previous executions
 platform/cleanup.sh
@@ -65,11 +68,41 @@ platform/cleanup.sh
 # Reset the system and network controller configuration
 platform/reset.sh
 
-# Start PTP with multiple time domains, one command per console
-# Adjust the interface and the vclock index for the CMLDS and GT instances
+# Start CMLDS
 source ptp/ptp.sh && run_cmlds enp2s0
-source ptp/ptp.sh && run_gt    enp2s0 [master|slave]
-source ptp/ptp.sh && run_wc    enp2s0 bmca
+
+# Start the Global Time domain master
+source ptp/ptp.sh && run_gt enp2s0 master
+
+# Start the Working Clock domain using BMCA
+source ptp/ptp.sh && run_wc enp2s0 bmca
+
+# Synchronize the system time to the Global Time
+source ptp/ptp.sh && run_gt2phc enp2s0 master
+
+# Synchronize CLOCK_AUX0 to the Working Clock
+source ptp/ptp.sh && run_phc2wc enp2s0 bmca CLOCK_AUX0
+```
+
+On the reference node:
+```
+# Remove interferring services and stale processes from previous executions
+platform/cleanup.sh
+
+# Reset the system and network controller configuration
+platform/reset.sh
+
+# Start the Global Time domain slave
+source ptp/ptp.sh && run_gt enp2s0 slave
+
+# Start the Working Clock domain using BMCA
+source ptp/ptp.sh && run_wc enp2s0 bmca
+
+# Synchronize the system time to the Global Time
+source ptp/ptp.sh && run_phc2gt enp2s0
+
+# Synchronize CLOCK_AUX0 to the Working Clock
+source ptp/ptp.sh && run_phc2wc enp2s0 bmca CLOCK_AUX0
 ```
 
 The CMLDS instance just measures peer delay and does not have master or
