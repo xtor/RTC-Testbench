@@ -61,7 +61,7 @@ function first_virtual_phc_index () {
 	PTP_DEVICE="$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/)"
 
 	# Retrieve the vclocks for PTP_NAME
-	VCLOCK_IDXS=$(ls -1d /sys/class/net/${INTERFACE}/device/ptp/${PTP_DEVICE}/ptp? | xargs basename --multiple | sed '3,$d' | sed 's/ptp//g')
+	VCLOCK_IDXS=$(ls -1d /sys/class/ptp/${PTP_DEVICE}/ptp* | xargs basename --multiple | sed '3,$d' | sed 's/ptp//g')
 	FIRST_VCLOCK_IDX=$(echo ${VCLOCK_IDXS} | cut -d' ' -f1)
 
 	# Return the index
