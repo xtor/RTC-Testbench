@@ -148,6 +148,41 @@ function preconfigure_interface () {
 }
 
 
+function reset_cgroup () {
+
+  SLICE_NAME=$1
+
+  sudo systemctl stop "${SLICE_NAME}" || true
+  # FIXME: avoid deleting potential files already existing
+  sudo rm -f /etc/systemd/system/${SLICE_NAME}
+
+  sudo mkdir -p /etc/systemd/system
+  cat <<EOF | sudo tee /etc/systemd/system/${SLICE_NAME} > /dev/null
+[Unit]
+Description=Realtime Slice for Benchmark Isolation
+
+[Slice]
+# Allocate the isolated cores
+AllowedCPUs=6-9
+# Mandatory: assign memory nodes (usually 0 on non-NUMA)
+AllowedMemoryNodes=0
+Delegate=yes
+DisableControllers=cpu io memory pids
+CPUAccounting=no
+MemoryAccounting=no
+IOAccounting=no
+TasksAccounting=no
+EOF
+
+  # Start the slice transiently so the path exists before writing to sysfs
+  sudo systemctl start "${SLICE_NAME}"
+
+  # Strictly isolate the partition
+  echo "isolated" | sudo tee "/sys/fs/cgroup/${SLICE_NAME}/cpuset.cpus.partition" > /dev/null
+
+}
+
+
 # TODO: operate on a list of interfaces provided as arguments to the script
 function platform_reset () {
   INTERFACE="$1"
@@ -166,6 +201,8 @@ function platform_reset () {
     reset_vclocks enp2s0
     reset_vclocks enp3s0
 
+    reset_cgroup "realtime.slice"
+
     wait
 
   else
@@ -176,6 +213,8 @@ function platform_reset () {
     reconfigure_interface ${INTERFACE}
     
     reset_vclocks ${INTERFACE}
+
+    reset_cgroup "realtime.slice"
 
     wait
 
