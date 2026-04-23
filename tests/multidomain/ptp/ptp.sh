@@ -16,7 +16,11 @@
 
 LINUXPTP="${HOME}/devel/demo/ett26/src/linuxptp/"
 PTP4L="${LINUXPTP}/ptp4l"
+PHC2SYS="${LINUXPTP}/phc2sys"
 PHC_CTL="${LINUXPTP}/phc_ctl"
+
+CHRONY="${HOME}/devel/demo/ett26/src/chrony/"
+CHRONYD="${CHRONY}/chronyd"
 
 RTCTB="${HOME}/devel/demo/ett26/src/RTC-Testbench/tests/multidomain/"
 CONFIGS="${RTCTB}/ptp/configs/"
@@ -184,3 +188,81 @@ function run_wc () {
 	${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m | sudo tee /var/log/ptp4l-${INTERFACE}-wc-${ROLE}.log
 
 }
+
+
+function run_gt2phc () {
+	INTERFACE="$1"
+	ROLE="$2"
+
+	PHC_INDEX=$(first_virtual_phc_index ${INTERFACE})
+	PTP_DEVICE="/dev/ptp${PHC_INDEX}"
+	DOMAIN=0
+	CLOCK_IDENTITY="$(clock_identity ${INTERFACE} ${PHC_INDEX} ${ROLE})"
+	TRANSPORT_SPECIFIC="1"
+	# /var/run/ptp4lro-master-gt-enp2s0
+	UDS_ADDRESS="/var/run/ptp4lro-${ROLE}-gt-${INTERFACE}"
+
+	PHC2SYS_ARGS="-s CLOCK_REALTIME -c ${PTP_DEVICE} -n ${DOMAIN} -z ${UDS_ADDRESS} --transportSpecific=${TRANSPORT_SPECIFIC} -m -w "
+	AFFINITY="6"
+	RTPRIO="90"
+	sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
+	${PHC2SYS} ${PHC2SYS_ARGS}
+}
+
+
+function run_phc2gt () {
+	INTERFACE="$1"
+
+	# chronyd currently lacks the ability to load new PHC refclocks on the
+	# fly. We implement a workaround where, if the file exists, we only
+	# append the line with the new PHC, and then restart chronyd
+	#
+	# The companion reset.sh script will delete the chronyd configuration
+	# file in /tmp
+	#
+	# It is *very* fragile, but allows to add NICs incrementally
+
+	PHC_INDEX=$(first_virtual_phc_index ${INTERFACE})
+	if [[ -f /tmp/chronyd.conf ]]; then
+		sudo pkill -KILL --exact chronyd
+		sleep 1
+		cat <<EOF >> /tmp/chronyd.conf
+refclock PHC /dev/ptp${PHC_INDEX} offset -37 poll 0 refid PHC${PHC_INDEX}
+EOF
+	else
+		cat <<EOF > /tmp/chronyd.conf
+port 0
+makestep 1.0 -1
+refclock PHC /dev/ptp${PHC_INDEX} offset -37 poll 0 refid PHC${PHC_INDEX}
+EOF
+	fi
+
+	sudo ${CHRONYD} -d -f /tmp/chronyd.conf
+}
+
+
+function run_wc2phc () {
+	INTERFACE="$1"
+	echo "In this demo each NIC in the master node is an independent WC"
+}
+
+
+function run_phc2wc () {
+	INTERFACE="$1"
+	ROLE="$2"
+	CLOCK="$3"
+
+	PHC_INDEX="$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/ | xargs basename --multiple | sed '3,$d' | sed 's/ptp//g')"
+	PTP_DEVICE="/dev/ptp${PHC_INDEX}"
+	DOMAIN=1
+	TRANSPORT_SPECIFIC="1"
+	# /var/run/ptp4lro-master-wc-enp2s0
+	UDS_ADDRESS="/var/run/ptp4lro-${ROLE}-wc-${INTERFACE}"
+
+	PHC2SYS_ARGS="-s ${PTP_DEVICE} -c ${CLOCK} -n ${DOMAIN} -z ${UDS_ADDRESS} --transportSpecific=${TRANSPORT_SPECIFIC} -m -w "
+	AFFINITY="6"
+	RTPRIO="90"
+	sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
+	${PHC2SYS} ${PHC2SYS_ARGS}
+}
+

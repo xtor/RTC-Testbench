@@ -24,10 +24,14 @@ function cleanup () {
 	# Kill already running daemons
 	sudo pkill -KILL --exact phc2sys || true
 	sudo pkill -KILL --exact ptp4l   || true
+	sudo pkill -KILL --exact chronyd || true
+	# Delete the chronyd configuration file
+	sudo rm -f /tmp/chronyd.conf
 
 	# Kill stale instances
 	sudo pkill --full reference.yaml
 	sudo pkill --full mirror.yaml
+
 
 	sleep 3
 
