@@ -158,7 +158,7 @@ function run_wc () {
 	INTERFACE="$1"
 	ROLE="$2"
 
-	PHC_INDEX=0
+	PHC_INDEX="$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/ | xargs basename --multiple | sed '3,$d' | sed 's/ptp//g')"
 	DOMAIN=1
 	CLOCK_IDENTITY="$(clock_identity ${INTERFACE} ${PHC_INDEX} ${ROLE})"
 
