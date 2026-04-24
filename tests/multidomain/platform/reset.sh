@@ -18,12 +18,15 @@ set -e
 PHC_CTL="${HOME}/devel/demo/ett26/src/linuxptp/phc_ctl"
 
 
-# FIXME: an auxclock should be reset for each interface provided
 function reset_auxclocks () {
   echo 0 | sudo tee /sys/kernel/time/aux_clocks/0/aux_clock_enable > /dev/null
   echo 0 | sudo tee /sys/kernel/time/aux_clocks/1/aux_clock_enable > /dev/null
-  echo 1 | sudo tee /sys/kernel/time/aux_clocks/0/aux_clock_enable > /dev/null
-  echo 1 | sudo tee /sys/kernel/time/aux_clocks/1/aux_clock_enable > /dev/null
+  echo 0 | sudo tee /sys/kernel/time/aux_clocks/2/aux_clock_enable > /dev/null
+  echo 0 | sudo tee /sys/kernel/time/aux_clocks/3/aux_clock_enable > /dev/null
+  echo 0 | sudo tee /sys/kernel/time/aux_clocks/4/aux_clock_enable > /dev/null
+  echo 0 | sudo tee /sys/kernel/time/aux_clocks/5/aux_clock_enable > /dev/null
+  echo 0 | sudo tee /sys/kernel/time/aux_clocks/6/aux_clock_enable > /dev/null
+  echo 0 | sudo tee /sys/kernel/time/aux_clocks/7/aux_clock_enable > /dev/null
 }
 
 

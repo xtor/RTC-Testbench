@@ -73,6 +73,19 @@ function first_virtual_phc_index () {
 }
 
 
+function first_hardware_phc_index () {
+	INTERFACE="$1"
+
+	# E.g. ptp0 for PHC 0
+#	PTP_DEVICE="$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/)"
+	IDXS=$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/ | xargs basename --multiple | sed 's/ptp//g')
+	FIRST_IDX=$(echo ${IDXS} | cut -d' ' -f1)
+
+	# Return the index
+	echo "${FIRST_IDX}"
+}
+
+
 function configuration_template () {
 	ROLE="$1"
 
@@ -250,7 +263,11 @@ function run_wc2phc () {
 function run_phc2wc () {
 	INTERFACE="$1"
 	ROLE="$2"
-	CLOCK="$3"
+
+	CLOCK_AUX_IDX=$(first_hardware_phc_index ${INTERFACE})
+	CLOCK="CLOCK_AUX${CLOCK_AUX_IDX})"
+	echo 0 | sudo tee /sys/kernel/time/aux_clocks/${CLOCK_AUX_IDX}/aux_clock_enable > /dev/null
+	echo 1 | sudo tee /sys/kernel/time/aux_clocks/${CLOCK_AUX_IDX}/aux_clock_enable > /dev/null
 
 	PHC_INDEX="$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/ | xargs basename --multiple | sed '3,$d' | sed 's/ptp//g')"
 	PTP_DEVICE="/dev/ptp${PHC_INDEX}"
