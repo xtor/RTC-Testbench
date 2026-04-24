@@ -197,12 +197,16 @@ function platform_reset () {
 
     reset_auxclocks &
 
+    reset_interface enp1s0
+    preconfigure_interface enp1s0
+
     reset_interface enp2s0
     preconfigure_interface enp2s0
 
     reset_interface enp3s0
     preconfigure_interface enp3s0
 
+    reset_vclocks enp1s0
     reset_vclocks enp2s0
     reset_vclocks enp3s0
 
