@@ -55,60 +55,93 @@ end-to-end time synchronization across network and SoC:
 
 ## Usage
 
-### Step 1: Set up time synchronization across the network
+### Step 1: Set up time synchronization
 
-Run the helper scripts and functions on mirror and reference nodes. Run each
-command on both ends, let it settle, and then move to the next one.
+Run the helper ptp-tmux.sh on both nodes to create a set of tmux panes for
+managing the bring-up.
 
 On the mirror node:
 ```
-# Remove interferring services and stale processes from previous executions
-platform/cleanup.sh
-
-# Reset the system and network controller configuration
-platform/reset.sh
-
-# Start CMLDS
-source ptp/ptp.sh && run_cmlds enp2s0
-
-# Start the Global Time domain master
-source ptp/ptp.sh && run_gt enp2s0 master
-
-# Start the Working Clock domain using BMCA
-source ptp/ptp.sh && run_wc enp2s0 bmca
-
-# Synchronize the system time to the Global Time
-source ptp/ptp.sh && run_gt2phc enp2s0 master
-
-# Synchronize CLOCK_AUX0 to the Working Clock
-source ptp/ptp.sh && run_phc2wc enp2s0 bmca CLOCK_AUX0
+./ptp-tmux.sh enp2s0 mirror
 ```
 
 On the reference node:
 ```
-# Remove interferring services and stale processes from previous executions
-platform/cleanup.sh
-
-# Reset the system and network controller configuration
-platform/reset.sh
-
-# Start the Global Time domain slave
-source ptp/ptp.sh && run_gt enp2s0 slave
-
-# Start the Working Clock domain using BMCA
-source ptp/ptp.sh && run_wc enp2s0 bmca
-
-# Synchronize the system time to the Global Time
-source ptp/ptp.sh && run_phc2gt enp2s0
-
-# Synchronize CLOCK_AUX0 to the Working Clock
-source ptp/ptp.sh && run_phc2wc enp2s0 bmca CLOCK_AUX0
+./ptp-tmux.sh enp2s0 reference
 ```
 
-The CMLDS instance just measures peer delay and does not have master or
-follower roles.
+This will trigger immediately the cleanup of stale processes and the reset of
+the interfaces included in the test.
 
-The Working Clock instance may run with the BMCA in this example.
+After the reset, a CMLDS instance will be started automatically.
+
+The CMLDS instance just measures peer delay and does not have master or
+follower roles. Wait for the CMLDS instance to settle, and then start the
+Global Time instance on both sides:
+
+On the mirror node:
+```
+# Start the Global Time domain master
+run_gt enp2s0 master
+```
+
+On the reference node:
+```
+# Start the Global Time domain slave
+run_gt enp2s0 slave
+```
+
+Wait for the Global Time instance to settle, and then start the Working Clock
+instance on both sides:
+
+On the mirror node:
+```
+# Start the Working Clock domain master
+run_wc enp2s0 master
+```
+
+On the reference node:
+```
+# Start the Working Clock domain slave
+run_wc enp2s0 slave
+```
 
 The Global Time instance must run with predefined roles in order to correctly
 integrate with the time synchronization pieces at the host level.
+
+Once the Global Time and Working Clock domains are synchronizing, start the
+host time synchronization on both ends.
+
+On the mirror node, the Global Time domain masters' PHC will be updated based
+on the system time:
+```
+# Synchronize the system time to the Global Time
+run_gt2phc enp2s0 master
+```
+
+On the reference node, multiple Global Time sources across the PHCs of the
+different controllers will be used to update the system time:
+```
+# Synchronize the system time to the Global Time
+run_phc2gt enp2s0
+```
+
+Finally, synchronize the aux clock corresponding to each network controller,
+to the Working Clock domain values hold in the respective PHCs.
+
+On the mirror node:
+```
+# Synchronize CLOCK_AUXn to the Working Clock
+run_phc2wc enp2s0 master
+```
+
+On the reference node:
+```
+# Synchronize CLOCK_AUXn to the Working Clock
+run_phc2wc enp2s0 slave
+```
+
+The specific CLOCK_AUXn is selected based on a value of n corresponding to
+the index of the physical PTP device under /dev/ptpn. The helper functions
+calculate this value and only enable the required CLOCK_AUXn in order to avoid
+performance issues.
