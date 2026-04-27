@@ -41,7 +41,7 @@ uint64_t tx_time_get_frame_tx_time(uint64_t sequence_counter, uint64_t duration,
 	 * All calculations are performed in nanoseconds.
 	 */
 
-	clock_gettime(app_config.application_clock_id, &now);
+	app_clock_get(&now);
 	now_ns = ts_to_ns(&now);
 	past_cycles = (now_ns - app_config.application_base_start_time_ns) / cycle_time;
 	base_time = (past_cycles + 1) * cycle_time + app_config.application_base_start_time_ns;

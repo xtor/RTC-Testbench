@@ -39,7 +39,7 @@ static void lldp_build_frame_from_rx(unsigned char *frame_data, const unsigned c
 
 	/* One task: Set the tx timestamp. */
 	meta = (struct reference_meta_data *)(frame_data + sizeof(*eth));
-	set_mirror_tx_timestamp(meta);
+	set_mirror_tx_timestamp_est(meta);
 }
 
 static void lldp_initialize_frame(struct thread_context *thread_context, unsigned char *frame_data,
@@ -116,6 +116,10 @@ static int lldp_send_frames(struct thread_context *thread_context, unsigned char
 	const struct traffic_class_config *lldp_config = thread_context->conf;
 	int len, i;
 
+	/* Adjust meta data */
+	set_mirror_tx_timestamp(lldp_config, frame_data, lldp_config->frame_length, num_frames,
+				thread_context->meta_data_offset);
+
 	/* Send them */
 	len = lldp_send_messages(thread_context, socket_fd, destination, frame_data, num_frames);
 
@@ -142,7 +146,7 @@ static int lldp_gen_and_send_frames(struct thread_context *thread_context, int s
 	struct ethhdr *eth;
 	int len, i;
 
-	clock_gettime(app_config.application_clock_id, &tx_time);
+	app_clock_get(&tx_time);
 
 	/* Adjust meta data */
 	for (i = 0; i < lldp_config->num_frames_per_cycle; i++) {

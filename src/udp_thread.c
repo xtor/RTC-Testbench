@@ -56,7 +56,7 @@ static void udp_send_frame(struct thread_context *thread_context, const unsigned
 	uint64_t sequence_counter;
 	ssize_t ret = -1;
 
-	clock_gettime(app_config.application_clock_id, &tx_time);
+	app_clock_get(&tx_time);
 
 	/* Fetch meta data */
 	meta = (struct reference_meta_data *)frame_data;
@@ -286,7 +286,7 @@ static void *udp_rx_thread_routine(void *data)
 				meta_data_to_sequence_counter(meta, num_frames_per_cycle);
 
 			tx_timestamp = meta_data_to_tx_timestamp(meta);
-			set_mirror_tx_timestamp(meta);
+			set_mirror_tx_timestamp_est(meta);
 
 			out_of_order = sequence_counter != rx_sequence_counter;
 			payload_mismatch = memcmp(frame + sizeof(struct reference_meta_data),

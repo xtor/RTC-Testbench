@@ -16,6 +16,7 @@
 #include <time.h>
 
 #include "config.h"
+#include "log.h"
 #include "net_def.h"
 #include "security.h"
 #include "stat.h"
@@ -140,15 +141,54 @@ static inline uint64_t meta_data_to_tx_timestamp(const struct reference_meta_dat
 	return tx_timestamp;
 }
 
-static inline void set_mirror_tx_timestamp(struct reference_meta_data *meta)
+static inline void app_clock_get(struct timespec *time)
+{
+	int ret;
+
+	/* clock_gettime(AppClockId) can fail due to missing clocks e.g. CLOCK_AUX */
+	ret = clock_gettime(app_config.application_clock_id, time);
+	if (ret) {
+		log_message(LOG_LEVEL_ERROR, "STAT: clock_gettime() failed: %s!\n",
+			    strerror(errno));
+		memset(time, '\0', sizeof(*time));
+	}
+}
+
+static inline void set_mirror_tx_timestamp_est(struct reference_meta_data *meta)
 {
 	struct timespec now;
 
-	clock_gettime(app_config.application_clock_id, &now);
+	app_clock_get(&now);
 
+	/*
+	 * This is rather an estimation for the Tx timestamp. In case we do use PROFINET security,
+	 * the Tx timestamp is embedded into the frame upon *receive*, because the Rx thread calls
+	 * OpenSSL to authenticate and encrypt the frame afterwards. This means, we cannot update
+	 * the Tx timestamp on Tx without breaking the checksums etc.
+	 */
 	tx_timestamp_to_meta_data(meta,
 				  ts_to_ns(&now) + (app_config.application_tx_base_offset_ns -
 						    app_config.application_rx_base_offset_ns));
+}
+
+static inline void set_mirror_tx_timestamp(const struct traffic_class_config *conf,
+					   unsigned char *frame_data, size_t frame_size,
+					   size_t num_frames, uint32_t meta_data_offset)
+{
+	struct timespec tx_time;
+
+	/* Only update for non-secure frames. See comment in set_mirror_tx_timestamp_est(). */
+	if (conf->security_mode != SECURITY_MODE_NONE)
+		return;
+
+	app_clock_get(&tx_time);
+	for (int i = 0; i < (int)num_frames; i++) {
+		unsigned char *data = frame_data + i * frame_size;
+		struct reference_meta_data *meta_data;
+
+		meta_data = (struct reference_meta_data *)(data + meta_data_offset);
+		tx_timestamp_to_meta_data(meta_data, ts_to_ns(&tx_time));
+	}
 }
 
 static inline uint64_t get_sequence_counter(const unsigned char *frame_data,

@@ -131,8 +131,12 @@ static int generic_l2_send_frames(struct thread_context *thread_context, unsigne
 	size_t frame_length;
 	int len, i;
 
-	/* Send it */
+	/* Adjust meta data */
 	frame_length = l2_config->frame_length;
+	set_mirror_tx_timestamp(l2_config, frame_data, frame_length, num_frames,
+				thread_context->meta_data_offset);
+
+	/* Send it */
 	len = generic_l2_send_messages(thread_context, socket_fd, destination, frame_data,
 				       num_frames, duration);
 
@@ -158,7 +162,7 @@ static int generic_l2_gen_and_send_frames(struct thread_context *thread_context,
 	struct timespec tx_time = {};
 	int len, i;
 
-	clock_gettime(app_config.application_clock_id, &tx_time);
+	app_clock_get(&tx_time);
 
 	/* Adjust meta data */
 	for (i = 0; i < num_frames_per_cycle; i++) {
@@ -497,7 +501,7 @@ static int generic_l2_rx_frame(void *data, unsigned char *frame_data, size_t len
 	sequence_counter = meta_data_to_sequence_counter(&l2->meta_data, num_frames_per_cycle);
 
 	tx_timestamp = meta_data_to_tx_timestamp(&l2->meta_data);
-	set_mirror_tx_timestamp(&l2->meta_data);
+	set_mirror_tx_timestamp_est(&l2->meta_data);
 
 	xdp_get_timestamp_metadata(frame_data, &rx_hw_timestamp, &rx_sw_timestamp);
 	out_of_order = sequence_counter != thread_context->rx_sequence_counter;

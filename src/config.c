@@ -641,7 +641,11 @@ int config_read_from_file(const char *config_file)
 	if (app_config.application_clock_id != CLOCK_TAI && !base_time_seen) {
 		struct timespec current;
 
-		clock_gettime(app_config.application_clock_id, &current);
+		ret = clock_gettime(app_config.application_clock_id, &current);
+		if (ret) {
+			fprintf(stderr, "CONFIG: clock_gettime() failed: %s!\n", strerror(errno));
+			goto err_parse;
+		}
 		app_config.application_base_start_time_ns = (current.tv_sec + 30) * NSEC_PER_SEC;
 	}
 
@@ -1266,6 +1270,10 @@ int config_set_defaults(bool mirror_enabled)
 		goto out;
 	conf->payload_pattern_length = strlen(conf->payload_pattern);
 	conf->frame_length = 200;
+	conf->security_mode = SECURITY_MODE_NONE;
+	conf->security_algorithm = SECURITY_ALGORITHM_AES256_GCM;
+	conf->security_key = NULL;
+	conf->security_iv_prefix = NULL;
 	conf->rx_queue = 1;
 	conf->tx_queue = 1;
 	conf->socket_priority = 1;
@@ -1288,6 +1296,10 @@ int config_set_defaults(bool mirror_enabled)
 		goto out;
 	conf->payload_pattern_length = strlen(conf->payload_pattern);
 	conf->frame_length = 200;
+	conf->security_mode = SECURITY_MODE_NONE;
+	conf->security_algorithm = SECURITY_ALGORITHM_AES256_GCM;
+	conf->security_key = NULL;
+	conf->security_iv_prefix = NULL;
 	conf->rx_queue = 1;
 	conf->tx_queue = 1;
 	conf->socket_priority = 1;
@@ -1310,6 +1322,10 @@ int config_set_defaults(bool mirror_enabled)
 		goto out;
 	conf->payload_pattern_length = strlen(conf->payload_pattern);
 	conf->frame_length = 1400;
+	conf->security_mode = SECURITY_MODE_NONE;
+	conf->security_algorithm = SECURITY_ALGORITHM_AES256_GCM;
+	conf->security_key = NULL;
+	conf->security_iv_prefix = NULL;
 	conf->rx_queue = 0;
 	conf->tx_queue = 0;
 	conf->socket_priority = 0;
@@ -1340,6 +1356,10 @@ int config_set_defaults(bool mirror_enabled)
 		goto out;
 	conf->payload_pattern_length = strlen(conf->payload_pattern);
 	conf->frame_length = 1400;
+	conf->security_mode = SECURITY_MODE_NONE;
+	conf->security_algorithm = SECURITY_ALGORITHM_AES256_GCM;
+	conf->security_key = NULL;
+	conf->security_iv_prefix = NULL;
 	conf->rx_queue = 0;
 	conf->tx_queue = 0;
 	conf->socket_priority = 0;
@@ -1383,6 +1403,10 @@ int config_set_defaults(bool mirror_enabled)
 		goto out;
 	conf->payload_pattern_length = strlen(conf->payload_pattern);
 	conf->frame_length = 200;
+	conf->security_mode = SECURITY_MODE_NONE;
+	conf->security_algorithm = SECURITY_ALGORITHM_AES256_GCM;
+	conf->security_key = NULL;
+	conf->security_iv_prefix = NULL;
 	conf->rx_queue = 1;
 	conf->tx_queue = 1;
 	conf->socket_priority = 1;

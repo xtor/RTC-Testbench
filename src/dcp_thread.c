@@ -79,7 +79,7 @@ static void dcp_build_frame_from_rx(struct thread_context *thread_context,
 	eth_new->vlan_encapsulated_proto = htons(ETH_P_PROFINET_RT);
 
 	rt = (struct profinet_rt_header *)(new_frame + sizeof(*eth_new));
-	set_mirror_tx_timestamp(&rt->meta_data);
+	set_mirror_tx_timestamp_est(&rt->meta_data);
 }
 
 static int dcp_send_messages(struct thread_context *thread_context, int socket_fd,
@@ -110,6 +110,10 @@ static int dcp_send_frames(struct thread_context *thread_context, unsigned char 
 	const struct traffic_class_config *dcp_config = thread_context->conf;
 	int len, i;
 
+	/* Adjust meta data */
+	set_mirror_tx_timestamp(dcp_config, frame_data, dcp_config->frame_length, num_frames,
+				thread_context->meta_data_offset);
+
 	/* Send them */
 	len = dcp_send_messages(thread_context, socket_fd, destination, frame_data, num_frames);
 
@@ -136,7 +140,7 @@ static void dcp_gen_and_send_frames(struct thread_context *thread_context, int s
 	struct timespec tx_time = {};
 	int len, i;
 
-	clock_gettime(app_config.application_clock_id, &tx_time);
+	app_clock_get(&tx_time);
 
 	/* Adjust meta data */
 	for (i = 0; i < dcp_config->num_frames_per_cycle; i++) {
