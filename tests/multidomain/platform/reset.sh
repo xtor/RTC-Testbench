@@ -137,9 +137,9 @@ function preconfigure_interface () {
   sleep 5
 
   local BASETIME=0
-  sudo tc qdisc replace dev "${INTERFACE}" handle 100 parent root taprio num_tc 3 \
-    map 2 2 2 2 2 2 1 0 2 2 2 2 2 2 2 2 \
-    queues 1@0 1@1 2@2 \
+  sudo tc qdisc replace dev "${INTERFACE}" handle 100 parent root taprio num_tc 4 \
+    map 3 3 3 3 3 2 1 0 3 3 3 3 3 3 3 3 \
+    queues 1@0 1@1 1@2 1@3 \
     base-time "${BASETIME}" \
     sched-entry S 0x0F 1000000000 \
     flags 0x02
