@@ -63,7 +63,7 @@ function setup_timesynch_window () {
     # First start CMLDS
     tmux send-keys -t "${TARGET}.0" "source ptp/ptp.sh" C-m 
     tmux send-keys -t "${TARGET}.0" "clear" C-m 
-    tmux send-keys -t "${TARGET}.0" "platform/cleanup.sh && platform/reset.sh && run_cmlds ${INTERFACE}" C-m 
+    tmux send-keys -t "${TARGET}.0" "platform/cleanup.sh && platform/reset.sh ${INTERFACE} && run_cmlds ${INTERFACE}"
 
     # Then the Global Time domain
     tmux send-keys -t "${TARGET}.2" "source ptp/ptp.sh" C-m 
