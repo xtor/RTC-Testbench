@@ -145,3 +145,31 @@ The specific CLOCK_AUXn is selected based on a value of n corresponding to
 the index of the physical PTP device under /dev/ptpn. The helper functions
 calculate this value and only enable the required CLOCK_AUXn in order to avoid
 performance issues.
+
+
+### Step 2: Start the RTC TB
+
+Run the helper rtctb-tmux.sh on both nodes to create a set of tmux panes for
+managing the bring-up.
+
+On the mirror node:
+```
+./rtctb-tmux.sh enp2s0 mirror
+```
+
+On the reference node:
+```
+./rtctb-tmux.sh enp2s0 reference
+```
+
+Now start the RTC TB as usual.
+
+On the mirror node:
+```
+sudo ./mirror.sh
+```
+
+On the reference node:
+```
+sudo ./ref.sh
+```
