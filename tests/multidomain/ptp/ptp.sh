@@ -265,7 +265,7 @@ function run_phc2wc () {
 	ROLE="$2"
 
 	CLOCK_AUX_IDX=$(first_hardware_phc_index ${INTERFACE})
-	CLOCK="CLOCK_AUX${CLOCK_AUX_IDX})"
+	CLOCK="CLOCK_AUX${CLOCK_AUX_IDX}"
 	echo 0 | sudo tee /sys/kernel/time/aux_clocks/${CLOCK_AUX_IDX}/aux_clock_enable > /dev/null
 	echo 1 | sudo tee /sys/kernel/time/aux_clocks/${CLOCK_AUX_IDX}/aux_clock_enable > /dev/null
 
