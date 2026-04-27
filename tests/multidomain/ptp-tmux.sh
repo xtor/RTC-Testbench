@@ -16,7 +16,9 @@
 #  - 3rd row: WC ptp4l, WC host sync
 #
 #  The script can be called from within a tmux session or directly from a
-#  standalaone shell.
+#  standalone shell.
+#
+#  A shortcut Ctrl-B + Shift-Q closes all the panes and the window.
 #
 
 
