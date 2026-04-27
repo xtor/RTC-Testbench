@@ -41,7 +41,7 @@ function reset_vclocks () {
 }
 
 
-function reset_interface () {
+function reset_driver () {
 
   local INTERFACE=$1
 
@@ -195,6 +195,16 @@ EOF
 
 
 # TODO: operate on a list of interfaces provided as arguments to the script
+
+function reset_interface () {
+  INTERFACE="$1"
+
+  reset_driver "${INTERFACE}"
+  preconfigure_interface "${INTERFACE}"
+
+}
+
+
 function platform_reset () {
   INTERFACE="$1"
 
@@ -229,7 +239,6 @@ function platform_reset () {
     
     reset_vclocks ${INTERFACE}
 
-    reset_cgroup "realtime.slice"
 
     wait
 
@@ -240,16 +249,26 @@ function platform_reset () {
 
 
 
-
 SPEED="1000"
+
+if [ "$#" -eq 0 ]; then
+  echo "Usage: $0 INTERFACE0 ... INTERFACEn"
+  exit 1
+fi
 
 # We wait 5s to make sure the system time is up-to-date when we continue executing 
 # Make sure /etc/default/ntpdate is properly configured
 sudo ntpdate-debian > /dev/null
 sleep 5
 
-# TODO: Check that num args is 0 or 1
-platform_reset $1
+reset_auxclocks
+reset_cgroup "realtime.slice"
+for INTERFACE in "$@"; do
+    reset_driver ${INTERFACE}
+    preconfigure_interface ${INTERFACE}
+done
+
+# Display a summary of the interface link status
 ip -br link
 
 exit 0
