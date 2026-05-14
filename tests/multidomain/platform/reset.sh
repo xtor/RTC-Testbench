@@ -152,8 +152,8 @@ function preconfigure_interface () {
 
 
   # Increase the priority of the timestamping interrupt handler
-  IRQ_TS=$(ls -1 /sys/class/net/enp1s0/device/msi_irqs/ | head -1)
-  IRQ_TS_PID=$(ps -eLo pid,comm | grep "irq/${IRQ_TS}-${INTERFACE}" | tr -s ' ' | cut -f2 -d' ')
+  IRQ_TS=$(ls -1 /sys/class/net/${INTERFACE}/device/msi_irqs/ | head -1)
+  IRQ_TS_PID=$(pgrep -a "irq/${IRQ_TS}-${INTERFACE}" | cut -f1 -d' ')
   sudo chrt -f -p 95 "${IRQ_TS_PID}"
 
 }
