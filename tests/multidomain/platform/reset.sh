@@ -249,7 +249,7 @@ function platform_reset () {
 
 
 
-SPEED="1000"
+[ -z ${SPEED} ] && SPEED="1000"
 
 if [ "$#" -eq 0 ]; then
   echo "Usage: $0 INTERFACE0 ... INTERFACEn"
