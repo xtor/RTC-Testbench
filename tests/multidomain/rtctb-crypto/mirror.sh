@@ -21,15 +21,22 @@ sudo ethtool -K ${INTERFACE} ntuple off
 ./flow.sh ${INTERFACE}
 sleep 10
 
+# Remove any stale XDP program
+sudo xdp-loader unload -a ${INTERFACE} || true
+
+# We need an IP address in order for the LogJson packets to be sent
+sudo ip addr del 192.168.100.101/24 dev ${INTERFACE} || true
+sudo ip addr add 192.168.100.101/24 dev ${INTERFACE} 
+
 source ../ptp/ptp.sh
 CLOCK_AUX_IDX=$(first_hardware_phc_index ${INTERFACE})
 CLOCK="CLOCK_AUX${CLOCK_AUX_IDX}"
-sed -i "s/\(ApplicationClockId:[[:space:]]*\)[^ ]*/\1${CLOCK}/g" reference.yaml
+sed -i "s/\(ApplicationClockId:[[:space:]]*\)[^ ]*/\1${CLOCK}/g" mirror.yaml
 
 # Start one instance of mirror application
 cp ../../../build/xdp_kern_*.o .
 
 sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
-../../../build/reference -c reference.yaml
+../../../build/mirror -c mirror.yaml
 
 exit 0

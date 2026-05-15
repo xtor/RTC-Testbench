@@ -11,7 +11,7 @@
 set -e
 
 source ../../lib/common.sh
-source ../../lib/igc.sh
+source ../platform/igc.sh
 
 #
 # Command line arguments.
