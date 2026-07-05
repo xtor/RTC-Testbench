@@ -185,21 +185,39 @@ function preconfigure_interface () {
   # Set the link speed
   sudo ethtool -s "${INTERFACE}" speed "${SPEED}" autoneg on duplex full
 
+  #
+  # Tx Settings
+  #
+
   # Set the physical PHC to zero
   # The physical PHC will be the Working Clock, used to drive the Qbv schedule
   # We wait 5s to make sure the PHC is up-to-date when we continue executing 
   sudo "${PHC_CTL}" "${INTERFACE}" set 0.0 > /dev/null
   sleep 5
 
+  # We do not install a schedule but already map the traffic types to queues
+  # Queue 0 / TC0: for real-time control, PCP 6
+  # Queue 1 / TC1: for network critical traffic, PCP 7, LLDP, PTP
+  # Queue 2 / TC2: for traffic above best effort
+  # Queue 3 / TC3: for best effort
+  # TC0: socket prio 6
+  # TC1: socket prio 7
+  # TC2: socket prios 1-5 and 8 to 15
+  # TC3: socket prio 0 (default)
+  # Apps
+  # ptp4l: socket prio 7
   local BASETIME=0
-  sudo tc qdisc replace dev "${INTERFACE}" handle 100 parent root taprio num_tc 4 \
-    map 3 3 3 3 3 2 1 0 3 3 3 3 3 3 3 3 \
+  sudo tc qdisc replace dev "${INTERFACE}" handle 100 parent root \
+    stab overhead 28 linklayer ethernet \
+    taprio \
+    num_tc 4 \
+    map 3 2 2 2 2 2 0 1 2 2 2 2 2 2 2 2 \
     queues 1@0 1@1 1@2 1@3 \
     base-time "${BASETIME}" \
     sched-entry S 0x0F 1000000000 \
     flags 0x02
 
-  # Disable Interrupt Coalescing (rx disables both rx and tx as it works at pairs)
+  # Disable Interrupt Coalescing (rx-usecs disables both rx and tx)
   sudo ethtool -C "${INTERFACE}" rx-usecs 0
 
   # Enable Threaded NAPI
