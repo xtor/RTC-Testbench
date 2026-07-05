@@ -48,10 +48,8 @@ function run_rt_cmd () {
 }
 
 
-function tune_timestamping () {
-	INTERFACE="$1"
-
-	# XXX How to avoid hardcoding it?
+function affinity_for_interface () {
+	local INTERFACE="$1"
 
 	if [[ "${INTERFACE}" == "enp1s0" ]]; then
 		AFFINITY="4"
@@ -61,6 +59,15 @@ function tune_timestamping () {
 		echo "Interface ${INTERFACE} not tunable. Aborting..."
 		return
 	fi
+
+	echo ${AFFINITY}
+}
+
+function tune_timestamping () {
+	INTERFACE="$1"
+
+	AFFINITY=$(affinity_for_interface ${INTERFACE})
+
 
 	# Set affinity and increase the priority of the timestamping interrupt handler
 	IRQ_TS=$(ls -1 /sys/class/net/${INTERFACE}/device/msi_irqs/ | head -1)
@@ -200,13 +207,14 @@ function run_cmlds () {
 	    -e "s/\(message_tag[[:space:]]*[^ ]*\)/\1-${INTERFACE}/" \
             ${TEMPLATE} > ${PTP4L_CONFIG}
 
-	AFFINITY="4"
+	AFFINITY=$(affinity_for_interface ${INTERFACE})
+
+	# Tune the PTP worker for the vclock
 	RTPRIO="91"
 	PTP_WORKER_PID=$(pgrep -a "ptp${PHC_INDEX}" | cut -f1 -d' ')
 	run_rt_pid ${AFFINITY} ${RTPRIO} ${PTP_WORKER_PID}
 
 	# Run PTP instance
-	AFFINITY="4"
 	RTPRIO="70"
 	COMMAND="${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m"
 	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-${ROLE}.log
@@ -240,7 +248,7 @@ function run_gt () {
             ${TEMPLATE} > ${PTP4L_CONFIG}
 
 	# Run PTP instance
-	AFFINITY="4"
+	AFFINITY=$(affinity_for_interface ${INTERFACE})
 	RTPRIO="75"
 	COMMAND="${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m"
 	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-gt-${ROLE}.log
@@ -271,7 +279,7 @@ function run_wc () {
             ${TEMPLATE} > ${PTP4L_CONFIG}
 
 	# Run PTP instance
-	AFFINITY="4"
+	AFFINITY=$(affinity_for_interface ${INTERFACE})
 	RTPRIO="85"
 	COMMAND="${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m"
 	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-gt-${ROLE}.log &
@@ -302,7 +310,7 @@ function run_gt2phc () {
 	UDS_ADDRESS="/var/run/ptp4lro-${ROLE}-gt-${INTERFACE}"
 
 	PHC2SYS_ARGS="-s CLOCK_REALTIME -c ${PTP_DEVICE} -n ${DOMAIN} -z ${UDS_ADDRESS} --transportSpecific=${TRANSPORT_SPECIFIC} -m -w "
-	AFFINITY="4"
+	AFFINITY=$(affinity_for_interface ${INTERFACE})
 	RTPRIO="77"
 	COMMAND="${PHC2SYS} ${PHC2SYS_ARGS}"
 	run_rt_cmd $AFFINITY $RTPRIO "$COMMAND"
@@ -336,7 +344,8 @@ refclock PHC /dev/ptp${PHC_INDEX} offset -37 poll 0 refid PHC${PHC_INDEX}
 EOF
 	fi
 
-	AFFINITY="4"
+	# FIXME Avoid creating new instances
+	AFFINITY=$(affinity_for_interface ${INTERFACE})
 	RTPRIO="77"
 	sudo ${CHRONYD} -f /tmp/chronyd.conf
 
@@ -367,9 +376,8 @@ function run_phc2wc () {
 	UDS_ADDRESS="/var/run/ptp4lro-${ROLE}-wc-${INTERFACE}"
 
 	PHC2SYS_ARGS="-s ${PTP_DEVICE} -c ${CLOCK} -n ${DOMAIN} -z ${UDS_ADDRESS} --transportSpecific=${TRANSPORT_SPECIFIC} -m -w "
-	AFFINITY="4"
+	AFFINITY=$(affinity_for_interface ${INTERFACE})
 	RTPRIO="87"
 	COMMAND="${PHC2SYS} ${PHC2SYS_ARGS}"
 	run_rt_cmd $AFFINITY $RTPRIO "$COMMAND"
 }
-
