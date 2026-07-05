@@ -17,6 +17,8 @@
 
 set -e
 
+source ptp/ptp.sh
+
 LINUXPTP="./linuxptp/"
 PHC_CTL="${LINUXPTP}/phc_ctl"
 
@@ -74,15 +76,12 @@ igc_rx_queues_assign() {
 }
 
 
-function reset_auxclocks () {
-  echo 0 | sudo tee /sys/kernel/time/aux_clocks/0/aux_clock_enable > /dev/null
-  echo 0 | sudo tee /sys/kernel/time/aux_clocks/1/aux_clock_enable > /dev/null
-  echo 0 | sudo tee /sys/kernel/time/aux_clocks/2/aux_clock_enable > /dev/null
-  echo 0 | sudo tee /sys/kernel/time/aux_clocks/3/aux_clock_enable > /dev/null
-  echo 0 | sudo tee /sys/kernel/time/aux_clocks/4/aux_clock_enable > /dev/null
-  echo 0 | sudo tee /sys/kernel/time/aux_clocks/5/aux_clock_enable > /dev/null
-  echo 0 | sudo tee /sys/kernel/time/aux_clocks/6/aux_clock_enable > /dev/null
-  echo 0 | sudo tee /sys/kernel/time/aux_clocks/7/aux_clock_enable > /dev/null
+function reset_auxclock () {
+  local INTERFACE="$1"
+
+  local CLOCK_AUX_IDX=$(first_hardware_phc_index ${INTERFACE})
+
+  echo 0 | sudo tee /sys/kernel/time/aux_clocks/${CLOCK_AUX_IDX}/aux_clock_enable > /dev/null
 }
 
 
@@ -296,60 +295,22 @@ EOF
 }
 
 
-# TODO: operate on a list of interfaces provided as arguments to the script
-
 function reset_interface () {
   INTERFACE="$1"
 
   reset_driver "${INTERFACE}"
+  reset_vclocks "${INTERFACE}"
+  reset_auxclock "${INTERFACE}"
   preconfigure_interface "${INTERFACE}"
 
 }
 
 
-function platform_reset () {
-  INTERFACE="$1"
 
 
-  if [[ -z "$1" ]]; then
-
-    reset_auxclocks &
-
-    reset_interface enp1s0
-    preconfigure_interface enp1s0
-
-    reset_interface enp2s0
-    preconfigure_interface enp2s0
-
-    reset_interface enp3s0
-    preconfigure_interface enp3s0
-
-    reset_vclocks enp1s0
-    reset_vclocks enp2s0
-    reset_vclocks enp3s0
-
-    reset_cgroup "realtime.slice"
-
-    wait
-
-  else
-
-    reset_auxclocks &
-    
-    reset_interface ${INTERFACE}
-    preconfigure_interface ${INTERFACE}
-    
-    reset_vclocks ${INTERFACE}
-
-
-    wait
-
-  fi
-
-  sleep 10
-}
-
-
+#
+# Main script
+#
 
 [ -z ${SPEED} ] && SPEED="1000"
 
@@ -363,12 +324,11 @@ fi
 sudo ntpdate-debian > /dev/null
 sleep 5
 
-reset_auxclocks
-reset_cgroup "realtime.slice"
+# Reset each interface sequentially
 for INTERFACE in "$@"; do
-    reset_driver ${INTERFACE}
-    preconfigure_interface ${INTERFACE}
+    reset_interface ${INTERFACE}
 done
+reset_cgroup "realtime.slice"
 
 # Display a summary of the interface link status
 ip -br link
