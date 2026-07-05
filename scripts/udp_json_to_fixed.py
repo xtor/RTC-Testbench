@@ -20,6 +20,9 @@ In a little bit more detail, it:
 3. Transforms it into a sequence of fixed-length key string plus uint64 value
 4. Forwards the result as the payload of a UDP packet to <dest_ip>:<port>
 
+The parameter "measurement" can be used to select the measurements to be
+forwarded. E.g. "soc" will add the internal latency metrics.
+
 Usage:
     python3 udp_json_to_fixed.py <dest_ip> <port> <measurement>
 
