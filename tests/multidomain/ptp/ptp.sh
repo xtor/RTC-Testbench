@@ -274,6 +274,16 @@ function run_wc () {
 	COMMAND="${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m"
 	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-gt-${ROLE}.log &
 
+	# Set PTP timescale to 0
+	if [[ "${ROLE}" == "master" ]]; then
+		# Let the UDS be created
+		sleep 2
+		# XXX fix this, read values first, then set ptp_timescale to 0
+		# instead of overwriting
+		sudo ${PMC} -u -d ${DOMAIN} -s /var/run/ptp4l-master-wc-${INTERFACE} -t 1 -b 0 "SET GRANDMASTER_SETTINGS_NP clockClass 248 clockAccuracy 0xfe offsetScaledLogVariance 0xffff currentUtcOffset 37 leap61 0 leap59 0 currentUtcOffsetValid 1 ptpTimescale 0 timeTraceable 0 frequencyTraceable 0 timeSource 0xa0"
+	fi
+
+	fg
 }
 
 
