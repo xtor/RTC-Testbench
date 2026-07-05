@@ -26,24 +26,26 @@ CLOCK_AUX0, CLOCK_AUX1, and so on)
 
 ### Software Dependencies
 
-As of May 2026, this test requires several patches to the upstream Debian 13
+As of July 2026, this test requires several patches to the upstream Debian 13
 and Linux kernel software baselines.
 
-* Linux kernel 
-  * PTP device vclock support
-  * Auxiliary clocks support in kernel and headers
-  * System call support for the relevant system calls (e.g. clock_nanosleep)
-  * https://git.kernel.org/pub/scm/linux/kernel/git/thomas.weissschuh/linux.git/?h=b4/auxclock-nanosleep
+* Linux kernel
+  * Features required
+    * PTP device vclock support
+    * Auxiliary clocks support in kernel and headers
+    * Auxiliary clock support for the relevant system calls (e.g. clock_nanosleep)
+  * Thomas Weissschuh's auxclock-nanosleep is suggested
+    * https://git.kernel.org/pub/scm/linux/kernel/git/thomas.weissschuh/linux.git/?h=b4/auxclock-nanosleep
 
 * LinuxPTP
   * ptp4l IEEE 802.1AS-2020 Multiple time domains support
   * phc2sys, phc_ctl, etc support for auxiliary clocks
-  * `git clone -b staging https://github.com/mlichvar/linuxptp.git`
-    * Plus fix for timestamping error on vclock applied to raw.c
+  * LinuxPTP's upstream tip is suggested
 
 The RTC TB scripts contain environment variables to customize the path for the
 relevant binaries. After compiling the software above, make sure the paths are
 updated in the scripts.
+
 
 ### Hardware Dependencies
 
@@ -55,40 +57,86 @@ end-to-end time synchronization across network and SoC:
 
 ## Usage
 
-### Step 1: Set up time synchronization
+
+### Step 1: Set up the platform configuration
+
+This step will remove stale processes, reset network drivers and perform other
+cleanup and preparation tasks to make sure the initial state is the same.
+
+On the mirror node:
+```
+./platform-tmux.sh enp1s0 mirror
+```
+
+On the reference node:
+```
+./platform-tmux.sh enp1s0 reference
+```
+
+
+### Step 2: Set up time synchronization
 
 Run the helper ptp-tmux.sh on both nodes to create a set of tmux panes for
 managing the bring-up.
 
 On the mirror node:
 ```
-./ptp-tmux.sh enp2s0 mirror
+./ptp-tmux.sh enp1s0 mirror
 ```
 
 On the reference node:
 ```
-./ptp-tmux.sh enp2s0 reference
+./ptp-tmux.sh enp1s0 reference
 ```
 
-This will trigger immediately the cleanup of stale processes and the reset of
-the interfaces included in the test.
+Each pane will be ready to execute a different initialization command. The
+suggested order is:
+1. CMLDS on mirror
+1. CMLDS on reference
+1. Global Time domain on mirror (forces master role)
+1. Global Time local synchronization on mirror
+1. Global Time domain on reference (forces follower role)
+1. Global Time local synchronization on reference
+1. Working Clock domain on mirror (forces master role)
+1. Working Clock local synchronization on mirror
+1. Working Clock domain on reference (forces follower role)
+1. Working Clock local synchronization on reference
 
-After the reset, a CMLDS instance will be started automatically.
+In full detail:
 
-The CMLDS instance just measures peer delay and does not have master or
-follower roles. Wait for the CMLDS instance to settle, and then start the
-Global Time instance on both sides:
+CMLDS:
 
 On the mirror node:
 ```
-# Start the Global Time domain master
-run_gt enp2s0 master
+run_cmlds enp1s0
 ```
 
 On the reference node:
 ```
-# Start the Global Time domain slave
-run_gt enp2s0 slave
+run_cmlds enp1s0
+```
+
+Wait for CMLDS to stabilize, and then start Global Time on both sides:
+
+On the mirror node:
+```
+# Start the Global Time domain master in its pane
+run_gt enp1s0 master
+```
+```
+# Synchronize the system time to the Global Time by running on its pane
+run_gt2phc enp1s0 master
+```
+
+On the reference node:
+```
+# Start the Global Time domain slave in its pane
+run_gt enp1s0 slave
+```
+
+```
+# Synchronize the system time to the Global Time by running on its pane
+run_phc2gt enp1s0
 ```
 
 Wait for the Global Time instance to settle, and then start the Working Clock
@@ -97,69 +145,43 @@ instance on both sides:
 On the mirror node:
 ```
 # Start the Working Clock domain master
-run_wc enp2s0 master
+run_wc enp1s0 master
 ```
 
-On the reference node:
-```
-# Start the Working Clock domain slave
-run_wc enp2s0 slave
-```
-
-The Global Time instance must run with predefined roles in order to correctly
-integrate with the time synchronization pieces at the host level.
-
-Once the Global Time and Working Clock domains are synchronizing, start the
-host time synchronization on both ends.
-
-On the mirror node, the Global Time domain masters' PHC will be updated based
-on the system time:
-```
-# Synchronize the system time to the Global Time
-run_gt2phc enp2s0 master
-```
-
-On the reference node, multiple Global Time sources across the PHCs of the
-different controllers will be used to update the system time:
-```
-# Synchronize the system time to the Global Time
-run_phc2gt enp2s0
-```
-
-Finally, synchronize the aux clock corresponding to each network controller,
-to the Working Clock domain values hold in the respective PHCs.
-
-On the mirror node:
 ```
 # Synchronize CLOCK_AUXn to the Working Clock
-run_phc2wc enp2s0 master
+run_phc2wc enp1s0 master
 ```
-
-On the reference node:
-```
-# Synchronize CLOCK_AUXn to the Working Clock
-run_phc2wc enp2s0 slave
-```
-
 The specific CLOCK_AUXn is selected based on a value of n corresponding to
 the index of the physical PTP device under /dev/ptpn. The helper functions
 calculate this value and only enable the required CLOCK_AUXn in order to avoid
 performance issues.
 
+On the reference node:
+```
+# Synchronize CLOCK_AUXn to the Working Clock
+run_phc2wc enp1s0 slave
+```
 
-### Step 2: Start the RTC TB
+```
+# Start the Working Clock domain slave
+run_wc enp1s0 slave
+```
+
+
+### Step 3: Start the RTC TB
 
 Run the helper rtctb-tmux.sh on both nodes to create a set of tmux panes for
 managing the bring-up.
 
 On the mirror node:
 ```
-./rtctb-tmux.sh enp2s0 mirror
+./rtctb-tmux.sh enp1s0 mirror crypto
 ```
 
 On the reference node:
 ```
-./rtctb-tmux.sh enp2s0 reference
+./rtctb-tmux.sh enp1s0 reference crypto
 ```
 
 Now start the RTC TB as usual.
