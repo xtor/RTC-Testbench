@@ -319,33 +319,33 @@ function run_phc2gt () {
 	INTERFACE="$1"
 
 	# chronyd currently lacks the ability to load new PHC refclocks on the
-	# fly. We implement a workaround where, if the file exists, we only
-	# append the line with the new PHC, and then restart chronyd
+	# fly. We implement a workaround using the confdir directive. This
+	# allows us to add config files per interface dynamically.
 	#
-	# The companion reset.sh script will delete the chronyd configuration
-	# file in /tmp
-	#
-	# It is *very* fragile, but allows to add NICs incrementally
+	# Unfortunately, we can only reload the configuration by killing the
+	# process and starting it again.
 
 	PHC_INDEX=$(first_virtual_phc_index ${INTERFACE})
-	if [[ -f /tmp/chronyd.conf ]]; then
-		sudo pkill -KILL --exact chronyd
-		sleep 1
-		cat <<EOF >> /tmp/chronyd.conf
-refclock PHC /dev/ptp${PHC_INDEX} offset -37 poll 0 refid PHC${PHC_INDEX}
-EOF
-	else
-		cat <<EOF > /tmp/chronyd.conf
+	if [[ ! -d /tmp/chrony ]]; then
+		mkdir -p /tmp/chrony/chrony.d
+		cat <<EOF > /tmp/chrony/chrony.conf
+# Disable NTP server port
 port 0
 makestep 1.0 -1
-refclock PHC /dev/ptp${PHC_INDEX} offset -37 poll 0 refid PHC${PHC_INDEX}
+confdir /tmp/chrony/chrony.d
 EOF
 	fi
 
-	# FIXME Avoid creating new instances
+	cat <<EOF >> /tmp/chrony/chrony.d/${INTERFACE}.conf
+refclock PHC /dev/ptp${PHC_INDEX} offset -37 poll 0 refid PHC${PHC_INDEX}
+EOF
+
+	sudo pkill -KILL --exact chronyd
+	sleep 0.5
+
 	AFFINITY=$(affinity_for_interface ${INTERFACE})
 	RTPRIO="77"
-	sudo ${CHRONYD} -f /tmp/chronyd.conf
+	sudo ${CHRONYD} -f /tmp/chrony/chrony.conf
 
 	sudo watch ${CHRONYC} sources
 }
