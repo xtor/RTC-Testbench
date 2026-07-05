@@ -14,13 +14,15 @@
 #
 
 
-LINUXPTP="${HOME}/devel/demo/ett26/src/linuxptp/"
+LINUXPTP="./linuxptp/"
 PTP4L="${LINUXPTP}/ptp4l"
 PHC2SYS="${LINUXPTP}/phc2sys"
 PHC_CTL="${LINUXPTP}/phc_ctl"
+PMC="${LINUXPTP}/pmc"
 
-CHRONY="${HOME}/devel/demo/ett26/src/chrony/"
+CHRONY="./chrony/"
 CHRONYD="${CHRONY}/chronyd"
+CHRONYC="${CHRONY}/chronyc"
 
 RTCTB="${HOME}/devel/demo/ett26/src/RTC-Testbench/tests/multidomain/"
 CONFIGS="${RTCTB}/ptp/configs/"

@@ -17,7 +17,8 @@
 
 set -e
 
-PHC_CTL="${HOME}/devel/demo/ett26/src/linuxptp/phc_ctl"
+LINUXPTP="./linuxptp/"
+PHC_CTL="${LINUXPTP}/phc_ctl"
 
 
 
