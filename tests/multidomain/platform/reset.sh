@@ -220,6 +220,30 @@ function preconfigure_interface () {
   # Disable Interrupt Coalescing (rx-usecs disables both rx and tx)
   sudo ethtool -C "${INTERFACE}" rx-usecs 0
 
+
+  #
+  # Rx Settings
+  #
+
+  # Rx Queues Assignment.
+  # Rx Q 3 - All Traffic
+  # Rx Q 2 - RTC
+  # Rx Q 1 - TSN Low
+  # Rx Q 0 - TSN High
+  # RXQUEUES PCP 7 to 0, then PTP then LLDP
+  RXQUEUES=(1 0 2 2 2 2 2 3 1 1)
+  igc_rx_queues_assign ${INTERFACE} RXQUEUES
+
+  # XXX this config should be done at the start
+  # Disable VLAN Rx offload for eBPF XDP programs.
+  #
+  sudo ethtool -K "${INTERFACE}" rx-vlan-offload off
+
+
+  sudo ip link set dev ${INTERFACE} up
+  sleep 5
+
+
   # Enable Threaded NAPI
   echo 1 | sudo tee /sys/class/net/${INTERFACE}/threaded > /dev/null
 
