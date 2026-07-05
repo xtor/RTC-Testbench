@@ -197,11 +197,16 @@ function run_cmlds () {
 	    -e "s/\(message_tag[[:space:]]*[^ ]*\)/\1-${INTERFACE}/" \
             ${TEMPLATE} > ${PTP4L_CONFIG}
 
+	AFFINITY="4"
+	RTPRIO="91"
+	PTP_WORKER_PID=$(pgrep -a "ptp${PHC_INDEX}" | cut -f1 -d' ')
+	run_rt_pid ${AFFINITY} ${RTPRIO} ${PTP_WORKER_PID}
+
 	# Run PTP instance
-	AFFINITY="6"
-	RTPRIO="60"
-        sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
-	${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m | sudo tee /var/log/ptp4l-${INTERFACE}-cmlds-${ROLE}.log
+	AFFINITY="4"
+	RTPRIO="70"
+	COMMAND="${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m"
+	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-${ROLE}.log
 }
 
 
@@ -232,10 +237,10 @@ function run_gt () {
             ${TEMPLATE} > ${PTP4L_CONFIG}
 
 	# Run PTP instance
-	AFFINITY="6"
-	RTPRIO="70"
-        sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
-	${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m | sudo tee /var/log/ptp4l-${INTERFACE}-gt-${ROLE}.log
+	AFFINITY="4"
+	RTPRIO="75"
+	COMMAND="${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m"
+	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-gt-${ROLE}.log
 }
 
 
@@ -263,10 +268,10 @@ function run_wc () {
             ${TEMPLATE} > ${PTP4L_CONFIG}
 
 	# Run PTP instance
-	AFFINITY="6"
-	RTPRIO="80"
-        sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
-	${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m | sudo tee /var/log/ptp4l-${INTERFACE}-wc-${ROLE}.log
+	AFFINITY="4"
+	RTPRIO="85"
+	COMMAND="${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m"
+	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-gt-${ROLE}.log &
 
 }
 
@@ -284,10 +289,10 @@ function run_gt2phc () {
 	UDS_ADDRESS="/var/run/ptp4lro-${ROLE}-gt-${INTERFACE}"
 
 	PHC2SYS_ARGS="-s CLOCK_REALTIME -c ${PTP_DEVICE} -n ${DOMAIN} -z ${UDS_ADDRESS} --transportSpecific=${TRANSPORT_SPECIFIC} -m -w "
-	AFFINITY="6"
-	RTPRIO="90"
-	sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
-	${PHC2SYS} ${PHC2SYS_ARGS}
+	AFFINITY="4"
+	RTPRIO="77"
+	COMMAND="${PHC2SYS} ${PHC2SYS_ARGS}"
+	run_rt_cmd $AFFINITY $RTPRIO "$COMMAND"
 }
 
 
@@ -345,9 +350,9 @@ function run_phc2wc () {
 	UDS_ADDRESS="/var/run/ptp4lro-${ROLE}-wc-${INTERFACE}"
 
 	PHC2SYS_ARGS="-s ${PTP_DEVICE} -c ${CLOCK} -n ${DOMAIN} -z ${UDS_ADDRESS} --transportSpecific=${TRANSPORT_SPECIFIC} -m -w "
-	AFFINITY="6"
-	RTPRIO="90"
-	sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} \
-	${PHC2SYS} ${PHC2SYS_ARGS}
+	AFFINITY="4"
+	RTPRIO="87"
+	COMMAND="${PHC2SYS} ${PHC2SYS_ARGS}"
+	run_rt_cmd $AFFINITY $RTPRIO "$COMMAND"
 }
 
