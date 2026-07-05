@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: BSD-2-Clause
 # Copyright(C) 2026 Intel Corporation
 # Authors:
 #   Hector Blanco Alcaine
@@ -39,17 +39,19 @@ function setup_rtctb_window () {
 
     # Create layout
     tmux split-window -h -t "${TARGET}.0"
+    tmux split-window -v -t "${TARGET}.1"
     tmux select-layout -t "$TARGET" even-horizontal
 
     # Set pane titles
     tmux select-pane -T "RTC TB" -t "${TARGET}.0"
-    tmux select-pane -T "Debug" -t "${TARGET}.1"
+    tmux select-pane -T "UDP Translator" -t "${TARGET}.1"
+    tmux select-pane -T "Congestion" -t "${TARGET}.2"
 
     # Bind Prefix + Q (Shift+q) to instantly kill the window without a prompt
     tmux bind-key Q kill-window
 
     # First start RTC TB
-    tmux send-keys -t "${TARGET}.0" "cd rtctb0" C-m 
+    tmux send-keys -t "${TARGET}.0" "cd ${TBDIR}" C-m
     tmux send-keys -t "${TARGET}.0" "clear" C-m 
 
     if [[ "${NODE}" == "mirror" ]]; then
@@ -57,7 +59,17 @@ function setup_rtctb_window () {
     elif [[ "${NODE}" == "reference" ]]; then
         tmux send-keys -t "${TARGET}.0" "sudo ./ref.sh ${INTERFACE}"
     fi
-   
+
+    tmux send-keys -t "${TARGET}.1" "python3 ../../scripts/udp_json_to_fixed.py ${MIRROR_IP} ${PORT} ${MEASUREMENT}" C-m
+
+    if [[ "${NODE}" == "mirror" ]]; then
+        tmux send-keys -t "${TARGET}.2" "iperf3 -s" C-m
+    elif [[ "${NODE}" == "reference" ]]; then
+        tmux send-keys -t "${TARGET}.2" "iperf3 -c ${MIRROR_IP} -u -b 1G -t 0" C-m
+    fi
+
+    tmux select-pane -t "${TARGET}.0"
+
     if [ $ATTACH -eq 1 ]; then
         tmux attach-session -t "$SESSION_NAME"
     else
@@ -67,25 +79,35 @@ function setup_rtctb_window () {
 
 
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 INTERFACE [mirror|reference]"
+    echo "Usage: $0 [mirror|reference] [crypto|metrics]"
     exit 1
 fi
 
-INTERFACE="$1"
-NODE="$2"
+NODE="$1"
+TB="$2"
 
 
-if [[ "${NODE}" == "mirror" ]]; then
-    ROLE="master"
-elif [[ "${NODE}" == "reference" ]]; then
-    ROLE="slave"
+if [[ "${TB}" == "crypto" ]]; then
+    TBDIR="rtctb-crypto"
+    INTERFACE="enp1s0"
+    REF_IP="192.168.100.102"
+    MIRROR_IP="192.168.100.101"
+    PORT="60600"
+    MEASUREMENT="default"
+elif [[ "${TB}" == "metrics" ]]; then
+    TBDIR="rtctb-metrics"
+    INTERFACE="enp2s0"
+    REF_IP="192.168.100.104"
+    MIRROR_IP="192.168.100.103"
+    PORT="60601"
+    MEASUREMENT="soc"
 else
-    echo "Usage: $0 INTERFACE [mirror|reference]"
+    echo "Usage: $0 [mirror|reference] [crypto|metrics]"
     exit 1
 fi
 
 
-SESSION_NAME="Multidomain"
-WINDOW_NAME="${NODE} ${INTERFACE} TB0"
+SESSION_NAME="RTC Testbench"
+WINDOW_NAME="[${TB}]"
 sudo --validate
 setup_rtctb_window ${INTERFACE} ${NODE}
