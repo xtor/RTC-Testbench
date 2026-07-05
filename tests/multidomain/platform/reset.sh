@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: BSD-3-Clause
+# Copyright (C) 2020-2025 Linutronix GmbH
 # Copyright(C) 2026 Intel Corporation
 # Authors:
 #   Hector Blanco Alcaine
+#   Kurt Kanzenbach
 # 
 # Usage:
 # ./reset.sh [INTERFACE]
@@ -16,6 +18,59 @@
 set -e
 
 PHC_CTL="${HOME}/devel/demo/ett26/src/linuxptp/phc_ctl"
+
+
+
+
+#
+# igc_rx_queues_assign($interface, @rx_queues)
+#
+# Rx queues assignment based on PCP values and EtherType.
+#
+igc_rx_queues_assign() {
+  local interface=$1
+  local -n rx_queues=$2
+  local len
+
+  len=${#rx_queues[@]}
+
+  if [ "$len" -ne 10 ]; then
+    echo "igc_rx_queues_assign: rx_queues array len has to be 10!"
+    return
+  fi
+
+  sudo ethtool -K "${interface}" ntuple on
+
+  # PCP 7
+  sudo ethtool -N "${interface}" flow-type ether vlan 0xe000 m 0x1fff action "${rx_queues[0]}"
+
+  # PCP 6
+  sudo ethtool -N "${interface}" flow-type ether vlan 0xc000 m 0x1fff action "${rx_queues[1]}"
+
+  # PCP 5
+  sudo ethtool -N "${interface}" flow-type ether vlan 0xa000 m 0x1fff action "${rx_queues[2]}"
+
+  # PCP 4
+  sudo ethtool -N "${interface}" flow-type ether vlan 0x8000 m 0x1fff action "${rx_queues[3]}"
+
+  # PCP 3
+  sudo ethtool -N "${interface}" flow-type ether vlan 0x6000 m 0x1fff action "${rx_queues[4]}"
+
+  # PCP 2
+  sudo ethtool -N "${interface}" flow-type ether vlan 0x4000 m 0x1fff action "${rx_queues[5]}"
+
+  # PCP 1
+  sudo ethtool -N "${interface}" flow-type ether vlan 0x2000 m 0x1fff action "${rx_queues[6]}"
+
+  # PCP 0
+  sudo ethtool -N "${interface}" flow-type ether vlan 0x0000 m 0x1fff action "${rx_queues[7]}"
+
+  #
+  # PTP and LLDP are transmitted untagged. Steer them via EtherType.
+  #
+  sudo ethtool -N "${interface}" flow-type ether proto 0x88f7 action "${rx_queues[8]}"
+  sudo ethtool -N "${interface}" flow-type ether proto 0x88cc action "${rx_queues[9]}"
+}
 
 
 function reset_auxclocks () {
