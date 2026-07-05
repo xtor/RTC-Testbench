@@ -49,35 +49,33 @@ function setup_platform_window () {
     tmux split-window -h -p 50 -t "${TARGET}.4"
 
     # Set pane titles
-    tmux select-pane -T "Console" -t "${TARGET}.0"
+    tmux select-pane -T "enp1s0" -t "${TARGET}.0"
     tmux select-pane -T "dmesg" -t "${TARGET}.1"
-    tmux select-pane -T "Console 1" -t "${TARGET}.2"
-    tmux select-pane -T "Console 2" -t "${TARGET}.3" 
-    tmux select-pane -T "Console 3" -t "${TARGET}.4"
-    tmux select-pane -T "Console 4" -t "${TARGET}.5"
+    tmux select-pane -T "enp2s0" -t "${TARGET}.2"
+    tmux select-pane -T "Console 1" -t "${TARGET}.3" 
+    tmux select-pane -T "enp3s0" -t "${TARGET}.4"
+    tmux select-pane -T "Console 2" -t "${TARGET}.5"
 
     # Bind Prefix + Q (Shift+q) to instantly kill the window without a prompt
     tmux bind-key Q kill-window
 
     tmux send-keys -t "${TARGET}.1" "sudo dmesg -w" C-m
 
-    # First start CMLDS
+    # Reset interface enp1s0
     tmux send-keys -t "${TARGET}.0" "source ptp/ptp.sh" C-m
     tmux send-keys -t "${TARGET}.0" "clear" C-m
-    tmux send-keys -t "${TARGET}.0" "platform/cleanup.sh && platform/reset.sh enp1s0 && tune_timestamping enp1s0" C-m
+    tmux send-keys -t "${TARGET}.0" "platform/reset.sh enp1s0 && tune_timestamping enp1s0" C-m
 
-    # Then the Global Time domain
-#    tmux send-keys -t "${TARGET}.2" "source ptp/ptp.sh" C-m 
-#    tmux send-keys -t "${TARGET}.2" "clear" C-m 
-#    tmux send-keys -t "${TARGET}.2" "run_gt ${INTERFACE} ${ROLE}"
-    
-    # Then the Working Clock domain
-#    tmux send-keys -t "${TARGET}.4" "source ptp/ptp.sh" C-m 
-#    tmux send-keys -t "${TARGET}.4" "clear" C-m 
-#    tmux send-keys -t "${TARGET}.4" "run_wc ${INTERFACE} ${ROLE}"
+    # Reset interface enp2s0
+    tmux send-keys -t "${TARGET}.2" "source ptp/ptp.sh" C-m
+    tmux send-keys -t "${TARGET}.2" "clear" C-m
+    tmux send-keys -t "${TARGET}.2" "platform/reset.sh enp2s0 && tune_timestamping enp2s0" C-m
 
-#    tmux send-keys -t "${TARGET}.3" "source ptp/ptp.sh" C-m 
-#    tmux send-keys -t "${TARGET}.3" "clear" C-m 
+    # Reset interface enp3s0
+    tmux send-keys -t "${TARGET}.4" "source ptp/ptp.sh" C-m
+    tmux send-keys -t "${TARGET}.4" "clear" C-m
+    tmux send-keys -t "${TARGET}.4" "platform/reset.sh enp3s0 && tune_timestamping enp3s0" C-m
+
    
     if [ $ATTACH -eq 1 ]; then
         tmux attach-session -t "$SESSION_NAME"
@@ -127,4 +125,5 @@ fi
 SESSION_NAME="Platform"
 WINDOW_NAME="[${NODE} Platform]"
 sudo --validate
+platform/cleanup.sh
 setup_platform_window ${NODE}
