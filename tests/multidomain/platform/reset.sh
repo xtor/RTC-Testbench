@@ -229,7 +229,7 @@ Description=Realtime Slice for Benchmark Isolation
 
 [Slice]
 # Allocate the isolated cores
-AllowedCPUs=6-9
+AllowedCPUs=4-11
 # Mandatory: assign memory nodes (usually 0 on non-NUMA)
 AllowedMemoryNodes=0
 Delegate=yes
