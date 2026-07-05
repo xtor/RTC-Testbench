@@ -156,13 +156,14 @@ function first_hardware_phc_index () {
 
 function configuration_template () {
 	ROLE="$1"
+	TYPE="$2"
 
 	if [[ "${ROLE}" == "master" ]]; then
-		TEMPLATE="${CONFIGS}/gPTP_CMLDS_domain_master.cfg"
+		TEMPLATE="${CONFIGS}/gPTP_${TYPE}_domain_master.cfg"
 	elif [[ "${ROLE}" == "slave" ]]; then
-		TEMPLATE="${CONFIGS}/gPTP_CMLDS_domain_slave.cfg"
+		TEMPLATE="${CONFIGS}/gPTP_${TYPE}_domain_slave.cfg"
 	elif [[ "${ROLE}" == "bmca" ]]; then
-		TEMPLATE="${CONFIGS}/gPTP_CMLDS_domain_BMCA.cfg"
+		TEMPLATE="${CONFIGS}/gPTP_${TYPE}_domain_BMCA.cfg"
 	else
 		echo "Unknown ${ROLE} role. Aborting..."
 		return
@@ -224,7 +225,7 @@ function run_gt () {
 	sleep 2
 
 	# Adjust default LinuxPTP config files
-	TEMPLATE="$(configuration_template ${ROLE})"
+	TEMPLATE="$(configuration_template ${ROLE} CMLDS)"
 	PTP4L_CONFIG="/tmp/ptp4l-gt-${ROLE}-${INTERFACE}.cfg"
         sed -e "s/\(phc_index[[:space:]]*\)[^ ]*/\1${PHC_INDEX}/" \
             -e "s/\(^domainNumber[[:space:]]*\)[^ ]*/\1${DOMAIN}/" \
@@ -254,7 +255,7 @@ function run_wc () {
 
 	# Adjust default LinuxPTP config files
 	# Comment out utc_offset as it is the WC
-	TEMPLATE="$(configuration_template ${ROLE})"
+	TEMPLATE="$(configuration_template ${ROLE} CMLDS)"
 	PTP4L_CONFIG="/tmp/ptp4l-wc-${ROLE}-${INTERFACE}.cfg"
         sed -e "s/\(phc_index[[:space:]]*\)[^ ]*/\1${PHC_INDEX}/" \
             -e "s/\(^domainNumber[[:space:]]*\)[^ ]*/\1${DOMAIN}/" \
