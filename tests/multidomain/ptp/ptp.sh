@@ -153,8 +153,6 @@ function first_virtual_phc_index () {
 function first_hardware_phc_index () {
 	INTERFACE="$1"
 
-	# E.g. ptp0 for PHC 0
-#	PTP_DEVICE="$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/)"
 	IDXS=$(ls -1 /sys/class/net/${INTERFACE}/device/ptp/ | xargs basename --multiple | sed 's/ptp//g')
 	FIRST_IDX=$(echo ${IDXS} | cut -d' ' -f1)
 
