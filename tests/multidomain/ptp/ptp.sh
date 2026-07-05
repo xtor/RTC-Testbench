@@ -26,6 +26,74 @@ RTCTB="${HOME}/devel/demo/ett26/src/RTC-Testbench/tests/multidomain/"
 CONFIGS="${RTCTB}/ptp/configs/"
 
 
+function run_rt_pid () {
+	local AFFINITY="$1"
+	local RTPRIO="$2"
+	local PID="$3"
+
+	echo ${PID} | sudo tee /sys/fs/cgroup/realtime.slice/cgroup.procs
+	sudo taskset -p --cpu-list ${AFFINITY} ${PID}
+	sudo chrt -f -p ${RTPRIO} ${PID}
+}
+
+
+function run_rt_cmd () {
+	local AFFINITY="$1"
+	local RTPRIO="$2"
+	local COMMAND="$3"
+
+        sudo systemd-run --scope --slice=realtime.slice chrt -f ${RTPRIO} taskset -c ${AFFINITY} ${COMMAND}
+}
+
+
+function tune_timestamping () {
+	INTERFACE="$1"
+
+	# XXX How to avoid hardcoding it?
+
+	if [[ "${INTERFACE}" == "enp1s0" ]]; then
+		AFFINITY="4"
+	elif [[ "${INTERFACE}" == "enp2s0" ]]; then
+		AFFINITY="5"
+	else
+		echo "Interface ${INTERFACE} not tunable. Aborting..."
+		return
+	fi
+
+	# Set affinity and increase the priority of the timestamping interrupt handler
+	IRQ_TS=$(ls -1 /sys/class/net/${INTERFACE}/device/msi_irqs/ | head -1)
+	echo ${AFFINITY} | sudo tee /proc/irq/${IRQ_TS}/smp_affinity_list
+	IRQ_TS_PID=$(pgrep -a "irq/${IRQ_TS}-${INTERFACE}" | cut -f1 -d' ')
+	# The affinity will automatically match the one set for the IRQ
+	RTPRIO="97"
+	sudo chrt --fifo -p ${RTPRIO} ${IRQ_TS_PID}
+
+	# Set the affinity of the remaining interrupt handlers
+	OTHER_IRQS=$(ls -1 /sys/class/net/${INTERFACE}/device/msi_irqs/ | sed -n '2,$p')
+	for IRQ in ${OTHER_IRQS}; do
+		echo "0-3" | sudo tee /proc/irq/${IRQ}/smp_affinity_list
+	done
+
+	# Queue 1 is used for Network Control, affinitize its interrupt to the same core
+	# So the NAPI thread runs with the interrupt
+	IRQ_NC="$(cat /proc/interrupts | grep ${INTERFACE}-TxRx-1 | cut -f1 -d':' | sed 's/ //g')"
+	echo ${AFFINITY} | sudo tee /proc/irq/${IRQ_NC}/smp_affinity_list
+
+	# We mapped Network Control to queue 1
+	NC_PID=$(pgrep -f "irq/${IRQ_NC}-${INTERFACE}-TxRx-1" | cut -f1 -d' ')
+	# The affinity will automatically match the one set for the IRQ
+	RTPRIO="95"
+	sudo chrt --fifo -p ${RTPRIO} ${NC_PID}
+
+	# Affinitize the NAPI instance for Queue 1 to the same core
+	RTPRIO="93"
+	NAPI_ID=$(sudo ../../build/napictl -i ${INTERFACE} -q 1 -v | grep 'Tx NAPI' | cut -d':' -f2 | sed 's/ //g')
+	NAPI_PID=$(pgrep -a "napi/${INTERFACE}-${NAPI_ID}" | cut -f1 -d' ')
+	run_rt_pid ${AFFINITY} ${RTPRIO} ${NAPI_PID}
+
+}
+
+
 function clock_identity () {
 
 	INTERFACE="$1"
