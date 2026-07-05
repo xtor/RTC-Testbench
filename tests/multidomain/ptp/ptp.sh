@@ -334,7 +334,11 @@ refclock PHC /dev/ptp${PHC_INDEX} offset -37 poll 0 refid PHC${PHC_INDEX}
 EOF
 	fi
 
-	sudo ${CHRONYD} -d -f /tmp/chronyd.conf
+	AFFINITY="4"
+	RTPRIO="77"
+	sudo ${CHRONYD} -f /tmp/chronyd.conf
+
+	sudo watch ${CHRONYC} sources
 }
 
 
