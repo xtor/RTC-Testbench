@@ -242,6 +242,7 @@ EOF
 
   # Start the slice transiently so the path exists before writing to sysfs
   sudo systemctl start "${SLICE_NAME}"
+  sudo systemctl daemon-reload
 
   # Strictly isolate the partition
   echo "isolated" | sudo tee "/sys/fs/cgroup/${SLICE_NAME}/cpuset.cpus.partition" > /dev/null
