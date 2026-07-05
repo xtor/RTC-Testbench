@@ -247,12 +247,15 @@ function preconfigure_interface () {
 
   # Enable Threaded NAPI
   echo 1 | sudo tee /sys/class/net/${INTERFACE}/threaded > /dev/null
+  napithreads=$(ps aux | grep napi | grep "${INTERFACE}" | awk '{ print $2; }')
+  for task in ${napithreads}; do
+    sudo chrt -p -f 85 "$task"
+  done
 
-
-  # Increase the priority of the timestamping interrupt handler
-  IRQ_TS=$(ls -1 /sys/class/net/${INTERFACE}/device/msi_irqs/ | head -1)
-  IRQ_TS_PID=$(pgrep -a "irq/${IRQ_TS}-${INTERFACE}" | cut -f1 -d' ')
-  sudo chrt -f -p 95 "${IRQ_TS_PID}"
+  irqthreads=$(ps aux | grep irq | grep "${INTERFACE}" | awk '{ print $2; }')
+  for task in ${irqthreads}; do
+    sudo chrt -p -f 85 "$task"
+  done
 
 }
 
