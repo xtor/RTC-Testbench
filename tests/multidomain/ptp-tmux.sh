@@ -63,7 +63,7 @@ function setup_timesynch_window () {
     # First start CMLDS
     tmux send-keys -t "${TARGET}.0" "source ptp/ptp.sh" C-m 
     tmux send-keys -t "${TARGET}.0" "clear" C-m 
-    tmux send-keys -t "${TARGET}.0" "platform/cleanup.sh && platform/reset.sh ${INTERFACE} && run_cmlds ${INTERFACE}"
+    tmux send-keys -t "${TARGET}.0" "run_cmlds ${INTERFACE}"
 
     # Then the Global Time domain
     tmux send-keys -t "${TARGET}.2" "source ptp/ptp.sh" C-m 
@@ -90,7 +90,9 @@ function setup_timesynch_window () {
     tmux send-keys -t "${TARGET}.5" "source ptp/ptp.sh" C-m 
     tmux send-keys -t "${TARGET}.5" "clear" C-m 
     tmux send-keys -t "${TARGET}.5" "run_phc2wc ${INTERFACE} ${ROLE}"
-   
+
+    tmux select-pane -t "${TARGET}.0"
+
     if [ $ATTACH -eq 1 ]; then
         tmux attach-session -t "$SESSION_NAME"
     else
@@ -119,6 +121,6 @@ fi
 
 
 SESSION_NAME="Multidomain"
-WINDOW_NAME="${NODE} ${INTERFACE} Sync"
+WINDOW_NAME="[${INTERFACE} Sync]"
 sudo --validate
 setup_timesynch_window ${INTERFACE} ${NODE}
