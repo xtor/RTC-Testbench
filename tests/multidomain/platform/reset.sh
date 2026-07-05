@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: BSD-2-Clause
 # Copyright (C) 2020-2025 Linutronix GmbH
 # Copyright(C) 2026 Intel Corporation
 # Authors:
