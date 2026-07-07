@@ -51,9 +51,13 @@ function setup_timesynch_window () {
     tmux select-pane -T "CMLDS" -t "${TARGET}.0"
     tmux select-pane -T "dmesg" -t "${TARGET}.1"
     tmux select-pane -T "GT Domain" -t "${TARGET}.2"
-    tmux select-pane -T "GT vPHC <-> System Time" -t "${TARGET}.3" 
+    if [[ "${NODE}" == "mirror" ]]; then
+        tmux select-pane -T "System Time -> GT vPHC" -t "${TARGET}.3"
+    elif [[ "${NODE}" == "reference" ]]; then
+        tmux select-pane -T "GT vPHC -> System Time" -t "${TARGET}.3"
+    fi
     tmux select-pane -T "WC Domain" -t "${TARGET}.4"
-    tmux select-pane -T "WC PHC <-> CLOCK_AUX" -t "${TARGET}.5"
+    tmux select-pane -T "WC PHC -> CLOCK_AUX" -t "${TARGET}.5"
 
     # Bind Prefix + Q (Shift+q) to instantly kill the window without a prompt
     tmux bind-key Q kill-window
