@@ -55,6 +55,8 @@ function affinity_for_interface () {
 		AFFINITY="4"
 	elif [[ "${INTERFACE}" == "enp2s0" ]]; then
 		AFFINITY="5"
+	elif [[ "${INTERFACE}" == "enp3s0" ]]; then
+		AFFINITY="6"
 	else
 		echo "Interface ${INTERFACE} not tunable. Aborting..."
 		return
