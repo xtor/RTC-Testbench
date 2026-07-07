@@ -65,35 +65,39 @@ function setup_timesynch_window () {
     tmux send-keys -t "${TARGET}.1" "sudo dmesg -w" C-m
 
     # First start CMLDS
-    tmux send-keys -t "${TARGET}.0" "source ptp/ptp.sh" C-m 
-    tmux send-keys -t "${TARGET}.0" "clear" C-m 
-    tmux send-keys -t "${TARGET}.0" "run_cmlds ${INTERFACE}"
+    tmux send-keys -t "${TARGET}.0" "source ptp/ptp.sh" C-m
+    tmux send-keys -t "${TARGET}.0" "clear" C-m
+    tmux send-keys -t "${TARGET}.0" "run_cmlds ${INTERFACE}" C-m
 
     # Then the Global Time domain
-    tmux send-keys -t "${TARGET}.2" "source ptp/ptp.sh" C-m 
-    tmux send-keys -t "${TARGET}.2" "clear" C-m 
-    tmux send-keys -t "${TARGET}.2" "run_gt ${INTERFACE} ${ROLE}"
+    tmux send-keys -t "${TARGET}.2" "source ptp/ptp.sh" C-m
+    tmux send-keys -t "${TARGET}.2" "clear" C-m
+    tmux send-keys -t "${TARGET}.2" "sleep 15" C-m
+    tmux send-keys -t "${TARGET}.2" "run_gt ${INTERFACE} ${ROLE}" C-m
     
     # Then the Working Clock domain
-    tmux send-keys -t "${TARGET}.4" "source ptp/ptp.sh" C-m 
-    tmux send-keys -t "${TARGET}.4" "clear" C-m 
-    tmux send-keys -t "${TARGET}.4" "run_wc ${INTERFACE} ${ROLE}"
+    tmux send-keys -t "${TARGET}.4" "source ptp/ptp.sh" C-m
+    tmux send-keys -t "${TARGET}.4" "clear" C-m
+    tmux send-keys -t "${TARGET}.4" "sleep 30" C-m
+    tmux send-keys -t "${TARGET}.4" "run_wc ${INTERFACE} ${ROLE}" C-m
 
-    tmux send-keys -t "${TARGET}.3" "source ptp/ptp.sh" C-m 
-    tmux send-keys -t "${TARGET}.3" "clear" C-m 
+    tmux send-keys -t "${TARGET}.3" "source ptp/ptp.sh" C-m
+    tmux send-keys -t "${TARGET}.3" "clear" C-m
+    tmux send-keys -t "${TARGET}.3" "sleep 30" C-m
 
     if [[ "${NODE}" == "mirror" ]]; then
         # Synchronize the Global Time to the system time
-        tmux send-keys -t "${TARGET}.3" "run_gt2phc ${INTERFACE} ${ROLE}"
+        tmux send-keys -t "${TARGET}.3" "run_gt2phc ${INTERFACE} ${ROLE}" C-m
     elif [[ "${NODE}" == "reference" ]]; then
         # Synchronize the system time to the Global Time
-        tmux send-keys -t "${TARGET}.3" "run_phc2gt ${INTERFACE} ${ROLE}"
+        tmux send-keys -t "${TARGET}.3" "run_phc2gt ${INTERFACE} ${ROLE}" C-m
     fi
 
     # Synchronize CLOCK_AUX0 to the Working Clock
-    tmux send-keys -t "${TARGET}.5" "source ptp/ptp.sh" C-m 
-    tmux send-keys -t "${TARGET}.5" "clear" C-m 
-    tmux send-keys -t "${TARGET}.5" "run_phc2wc ${INTERFACE} ${ROLE}"
+    tmux send-keys -t "${TARGET}.5" "source ptp/ptp.sh" C-m
+    tmux send-keys -t "${TARGET}.5" "clear" C-m
+    tmux send-keys -t "${TARGET}.5" "sleep 45" C-m
+    tmux send-keys -t "${TARGET}.5" "run_phc2wc ${INTERFACE} ${ROLE}" C-m
 
     tmux select-pane -t "${TARGET}.0"
 
