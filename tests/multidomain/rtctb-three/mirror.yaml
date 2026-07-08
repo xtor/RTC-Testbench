@@ -1,0 +1,64 @@
+---
+#
+# Copyright (C) 2023-2026 Linutronix GmbH
+# Copyright (C) 2026 Intel Corporation
+# Authors:
+#   Hector Blanco Alcaine <hector.blanco.alcaine@intel.com>
+#   Kurt Kanzenbach <kurt@linutronix.de>
+#
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Sample reference YAML configuration file for Intel Bartlett Lake with i226
+#
+Application:
+  ApplicationClockId: CLOCK_AUX0
+  # ApplicationBaseStartTimeNS: 0
+  ApplicationBaseCycleTimeNS: 1ms
+  ApplicationTxBaseOffsetNS: 900us
+  ApplicationRxBaseOffsetNS: 300us
+  ApplicationXdpProgram: xdp_kern_profinet_vid100.o
+TSNHigh:
+  TsnHighEnabled: true
+  TsnHighXdpEnabled: true
+  TsnHighXdpSkbMode: false
+  TsnHighXdpZcMode: true
+  TsnHighXdpWakeupMode: true
+  TsnHighTxTimeEnabled: false
+  TsnHighTxTimeOffsetNS: 0
+  TsnHighTxTimeStampEnabled: false
+  TsnHighVid: 100
+  TsnHighPcp: 6
+  TsnHighNumFramesPerCycle: 32
+  TsnHighPayloadPattern: |
+    TsnHighPayloadPattern
+  TsnHighFrameLength: 82
+  TsnHighSecurityMode: AE
+  TsnHighSecurityAlgorithm: AES256-GCM
+  TsnHighSecurityKey: 01234567890123456789012345678901
+  TsnHighSecurityIvPrefix: 012345
+  TsnHighRxQueue: 0
+  TsnHighTxQueue: 0
+  TsnHighSocketPriority: 7
+  TsnHighTxThreadPriority: 98
+  TsnHighRxThreadPriority: 98
+  TsnHighTxThreadCpu: 9
+  TsnHighRxThreadCpu: 9
+  TsnHighInterface: enp3s0
+  TsnHighDestination: 80:6d:97:5b:71:d4
+Log:
+  LogThreadPriority: 1
+  LogThreadCpu: 11
+  LogFile: /var/log/mirror-crypto_three.log
+  LogLevel: Debug
+LogJson:
+  LogJson: true
+  LogJsonThreadPriority: 1
+  LogJsonThreadCpu: 11
+  LogJsonHost: 127.0.0.1
+  LogJsonPort: 60603
+  LogJsonMeasurementName: crypto-mirror-three
+Debug:
+  DebugStopTraceOnOutlier: false
+  DebugStopTraceOnError: false
+  DebugMonitorMode: false
+  DebugMonitorDestination: 44:44:44:44:44:44
