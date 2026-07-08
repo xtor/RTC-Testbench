@@ -26,7 +26,7 @@ CLOCK_AUX0, CLOCK_AUX1, and so on)
 
 ### Software Dependencies
 
-As of July 2026, this test requires several patches to the upstream Debian 13
+As of July 2026, this test requires several changes to the upstream Debian 13
 and Linux kernel software baselines.
 
 * Linux kernel
@@ -37,14 +37,12 @@ and Linux kernel software baselines.
   * Thomas Weissschuh's auxclock-nanosleep is suggested
     * https://git.kernel.org/pub/scm/linux/kernel/git/thomas.weissschuh/linux.git/?h=b4/auxclock-nanosleep
 
-* LinuxPTP
+* LinuxPTP and chronyd
   * ptp4l IEEE 802.1AS-2020 Multiple time domains support
   * phc2sys, phc_ctl, etc support for auxiliary clocks
-  * LinuxPTP's upstream tip is suggested
 
-The RTC TB scripts contain environment variables to customize the path for the
-relevant binaries. After compiling the software above, make sure the paths are
-updated in the scripts.
+You will need to recompile and install a patched kernel. The scripts will take
+care of cloning and compiling the latest linuxptp and chrony code available.
 
 
 ### Hardware Dependencies
@@ -65,19 +63,23 @@ cleanup and preparation tasks to make sure the initial state is the same.
 
 On the mirror node:
 ```
-./platform-tmux.sh enp1s0 mirror
+./platform-tmux.sh mirror
 ```
 
 On the reference node:
 ```
-./platform-tmux.sh enp1s0 reference
+./platform-tmux.sh reference
 ```
 
 
 ### Step 2: Set up time synchronization
 
-Run the helper ptp-tmux.sh on both nodes to create a set of tmux panes for
-managing the bring-up.
+Time synchronization needs to be configured per interface before starting the
+RTC Testbench instance on that interface.
+
+The tmux helper will automatically create a set of panes and run the different
+commands required to configure multiple time domains with ptp4l, phc2sys and
+chronyd.
 
 On the mirror node:
 ```
@@ -89,20 +91,63 @@ On the reference node:
 ./ptp-tmux.sh enp1s0 reference
 ```
 
-Each pane will be ready to execute a different initialization command. The
-suggested order is:
-1. CMLDS on mirror
-1. CMLDS on reference
-1. Global Time domain on mirror (forces master role)
+This will setup the following items for that interface:
+1. PTP CMLDS on mirror
+1. PTP CMLDS on reference
+1. PTP Global Time domain on mirror (forces master role)
 1. Global Time local synchronization on mirror
-1. Global Time domain on reference (forces follower role)
+1. PTP Global Time domain on reference (forces follower role)
 1. Global Time local synchronization on reference
-1. Working Clock domain on mirror (forces master role)
+1. PTP Working Clock domain on mirror (forces master role)
 1. Working Clock local synchronization on mirror
-1. Working Clock domain on reference (forces follower role)
+1. PTP Working Clock domain on reference (forces follower role)
 1. Working Clock local synchronization on reference
 
-In full detail:
+
+
+### Step 3: Start the RTC TB
+
+Run the helper rtctb-tmux.sh on both nodes to create a set of tmux panes for
+managing the experiment setup. You can start up to three experiments in the
+current implementation, providing e.g. "one", "two" or "three" to the helper.
+For example:
+
+On the mirror node:
+```
+./rtctb-tmux.sh mirror one
+```
+
+On the reference node:
+```
+./rtctb-tmux.sh reference one
+```
+
+This will create three panes:
+* RTC TB
+* RTC TB statistics
+* iperf3 concurrent congestion
+
+
+Now start the RTC TB as usual.
+
+On the mirror node:
+```
+sudo ./mirror.sh
+```
+
+On the reference node:
+```
+sudo ./ref.sh
+```
+
+## Additional information
+
+### Time Synchronization initialization
+
+The file ptp/ptp.sh contains a set of bash functions that can be sourced and
+used as standalone commands.
+
+To replicate the ptp-tmux.sh helper sequence manually, you may run the following:
 
 CMLDS:
 
@@ -168,30 +213,3 @@ run_phc2wc enp1s0 slave
 run_wc enp1s0 slave
 ```
 
-
-### Step 3: Start the RTC TB
-
-Run the helper rtctb-tmux.sh on both nodes to create a set of tmux panes for
-managing the bring-up.
-
-On the mirror node:
-```
-./rtctb-tmux.sh enp1s0 mirror crypto
-```
-
-On the reference node:
-```
-./rtctb-tmux.sh enp1s0 reference crypto
-```
-
-Now start the RTC TB as usual.
-
-On the mirror node:
-```
-sudo ./mirror.sh
-```
-
-On the reference node:
-```
-sudo ./ref.sh
-```
