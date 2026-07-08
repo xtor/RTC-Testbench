@@ -55,17 +55,17 @@ function setup_rtctb_window () {
     tmux send-keys -t "${TARGET}.0" "clear" C-m 
 
     if [[ "${NODE}" == "mirror" ]]; then
-        tmux send-keys -t "${TARGET}.0" "sudo ./mirror.sh ${INTERFACE}"
+        tmux send-keys -t "${TARGET}.0" "sudo ./mirror.sh"
     elif [[ "${NODE}" == "reference" ]]; then
-        tmux send-keys -t "${TARGET}.0" "sudo ./ref.sh ${INTERFACE}"
+        tmux send-keys -t "${TARGET}.0" "sudo ./ref.sh"
     fi
 
-    tmux send-keys -t "${TARGET}.1" "python3 ../../scripts/udp_json_to_fixed.py ${MIRROR_IP} ${PORT} ${MEASUREMENT}" C-m
+    tmux send-keys -t "${TARGET}.1" "python3 ../../scripts/udp_json_to_fixed.py ${MIRROR_IP} ${PORT} default" C-m
 
     if [[ "${NODE}" == "mirror" ]]; then
-        tmux send-keys -t "${TARGET}.2" "iperf3 -s" C-m
+        tmux send-keys -t "${TARGET}.2" "iperf3 --server --bind-dev ${MIRROR_INTERFACE}" C-m
     elif [[ "${NODE}" == "reference" ]]; then
-        tmux send-keys -t "${TARGET}.2" "iperf3 -c ${MIRROR_IP} -u -b 1G -t 0" C-m
+        tmux send-keys -t "${TARGET}.2" "iperf3 --client ${MIRROR_IP} -u -b 1G -t 0" C-m
     fi
 
     tmux select-pane -t "${TARGET}.0"
@@ -79,35 +79,34 @@ function setup_rtctb_window () {
 
 
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 [mirror|reference] [crypto|metrics]"
+    echo "Usage: $0 [mirror|reference] [one|two|three]"
     exit 1
 fi
 
 NODE="$1"
-TB="$2"
+INSTANCE="$2"
 
 
-if [[ "${TB}" == "crypto" ]]; then
-    TBDIR="rtctb-crypto"
-    INTERFACE="enp1s0"
-    REF_IP="192.168.100.102"
-    MIRROR_IP="192.168.100.101"
-    PORT="60600"
-    MEASUREMENT="default"
-elif [[ "${TB}" == "metrics" ]]; then
-    TBDIR="rtctb-metrics"
-    INTERFACE="enp2s0"
-    REF_IP="192.168.100.104"
-    MIRROR_IP="192.168.100.103"
+if [[ "${INSTANCE}" == "one" ]]; then
+    TBDIR="rtctb-one"
+    MIRROR_IP="192.168.001.101"
     PORT="60601"
-    MEASUREMENT="soc"
+elif [[ "${INSTANCE}" == "two" ]]; then
+    TBDIR="rtctb-two"
+    MIRROR_IP="192.168.002.101"
+    PORT="60602"
+elif [[ "${INSTANCE}" == "three" ]]; then
+    TBDIR="rtctb-three"
+    MIRROR_IP="192.168.003.101"
+    PORT="60603"
 else
-    echo "Usage: $0 [mirror|reference] [crypto|metrics]"
+    echo "Usage: $0 [mirror|reference] [one|two|three]"
     exit 1
 fi
+MIRROR_INTERFACE="$(cd ${TBDIR} && grep 'INTERFACE=' mirror.sh  | sed 's/INTERFACE=\"\(.*\)\"$/\1/g')"
 
 
 SESSION_NAME="RTC Testbench"
-WINDOW_NAME="[${TB}]"
+WINDOW_NAME="[RTC TB ${INSTANCE}]"
 sudo --validate
-setup_rtctb_window ${INTERFACE} ${NODE}
+setup_rtctb_window ${NODE}
