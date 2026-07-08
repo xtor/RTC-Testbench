@@ -126,4 +126,5 @@ SESSION_NAME="Platform"
 WINDOW_NAME="[${NODE} Platform]"
 sudo --validate
 platform/cleanup.sh
+mkdir /tmp/multidomain
 setup_platform_window ${NODE}

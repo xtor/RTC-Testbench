@@ -26,8 +26,7 @@ function cleanup () {
 	sudo pkill -KILL --exact ptp4l   || true
 	sudo pkill -KILL --exact chronyd || true
 	# Delete the chronyd configuration file
-	sudo rm -f /tmp/chrony
-	sudo rm -f /tmp/chronyd.conf
+	sudo rm -rf /tmp/multidomain
 
 	# Kill stale instances
 	sudo pkill --full reference.yaml

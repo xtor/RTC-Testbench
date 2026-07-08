@@ -200,7 +200,7 @@ function run_cmlds () {
 
 	# Adjust default LinuxPTP config files
         TEMPLATE="${CONFIGS}/gPTP_CMLDS_server.cfg"
-	PTP4L_CONFIG="/tmp/ptp4l-cmlds-${INTERFACE}.cfg"
+	PTP4L_CONFIG="/tmp/multidomain/ptp4l-cmlds-${INTERFACE}.cfg"
         sed -e "s/\(phc_index[[:space:]]*\)[^ ]*/\1${PHC_INDEX}/" \
 	    -e "s/\(clockIdentity[[:space:]]*\)[^ ]*/\1${CLOCK_IDENTITY}/" \
 	    -e "s/\(uds_address[[:space:]]*\/var\/run\/cmlds_server\)/\1-${INTERFACE}/" \
@@ -236,7 +236,7 @@ function run_gt () {
 
 	# Adjust default LinuxPTP config files
 	TEMPLATE="$(configuration_template ${ROLE} CMLDS)"
-	PTP4L_CONFIG="/tmp/ptp4l-gt-${ROLE}-${INTERFACE}.cfg"
+	PTP4L_CONFIG="/tmp/multidomain/ptp4l-gt-${ROLE}-${INTERFACE}.cfg"
         sed -e "s/\(phc_index[[:space:]]*\)[^ ]*/\1${PHC_INDEX}/" \
             -e "s/\(^domainNumber[[:space:]]*\)[^ ]*/\1${DOMAIN}/" \
 	    -e "s/\(clockIdentity[[:space:]]*\)[^ ]*/\1${CLOCK_IDENTITY}/" \
@@ -266,7 +266,7 @@ function run_wc () {
 	# Adjust default LinuxPTP config files
 	# Comment out utc_offset as it is the WC
 	TEMPLATE="$(configuration_template ${ROLE} CMLDS)"
-	PTP4L_CONFIG="/tmp/ptp4l-wc-${ROLE}-${INTERFACE}.cfg"
+	PTP4L_CONFIG="/tmp/multidomain/ptp4l-wc-${ROLE}-${INTERFACE}.cfg"
         sed -e "s/\(phc_index[[:space:]]*\)[^ ]*/\1${PHC_INDEX}/" \
             -e "s/\(^domainNumber[[:space:]]*\)[^ ]*/\1${DOMAIN}/" \
 	    -e "s/\(clockIdentity[[:space:]]*\)[^ ]*/\1${CLOCK_IDENTITY}/" \
@@ -328,17 +328,17 @@ function run_phc2gt () {
 	# process and starting it again.
 
 	PHC_INDEX=$(first_virtual_phc_index ${INTERFACE})
-	if [[ ! -d /tmp/chrony ]]; then
-		mkdir -p /tmp/chrony/chrony.d
-		cat <<EOF > /tmp/chrony/chrony.conf
+	if [[ ! -d /tmp/multidomain/chrony ]]; then
+		mkdir -p /tmp/multidomain/chrony/chrony.d
+		cat <<EOF > /tmp/multidomain/chrony/chrony.conf
 # Disable NTP server port
 port 0
 makestep 1.0 -1
-confdir /tmp/chrony/chrony.d
+confdir /tmp/multidomain/chrony/chrony.d
 EOF
 	fi
 
-	cat <<EOF >> /tmp/chrony/chrony.d/${INTERFACE}.conf
+	cat <<EOF >> /tmp/multidomain/chrony/chrony.d/${INTERFACE}.conf
 refclock PHC /dev/ptp${PHC_INDEX} offset -37 poll 0 refid PHC${PHC_INDEX}
 EOF
 
@@ -347,7 +347,7 @@ EOF
 
 	AFFINITY=$(affinity_for_interface ${INTERFACE})
 	RTPRIO="77"
-	sudo ${CHRONYD} -f /tmp/chrony/chrony.conf
+	sudo ${CHRONYD} -f /tmp/multidomain/chrony/chrony.conf
 
 	sudo watch ${CHRONYC} sources
 }
