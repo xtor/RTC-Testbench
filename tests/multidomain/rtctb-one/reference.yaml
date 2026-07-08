@@ -41,8 +41,8 @@ TSNHigh:
   TsnHighSocketPriority: 7
   TsnHighTxThreadPriority: 98
   TsnHighRxThreadPriority: 98
-  TsnHighTxThreadCpu: 9
-  TsnHighRxThreadCpu: 9
+  TsnHighTxThreadCpu: 7
+  TsnHighRxThreadCpu: 7
   TsnHighInterface: enp1s0
   TsnHighDestination: 80:6d:97:5b:72:73
 Log:
@@ -55,7 +55,7 @@ LogJson:
   LogJsonThreadPriority: 1
   LogJsonThreadCpu: 8
   LogJsonHost: 127.0.0.1
-  LogJsonPort: 60600
+  LogJsonPort: 60601
   LogJsonMeasurementName: crypto-reference
 Debug:
   DebugStopTraceOnOutlier: false

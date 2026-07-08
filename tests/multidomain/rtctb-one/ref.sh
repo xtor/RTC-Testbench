@@ -12,10 +12,10 @@
 set -e
 
 INTERFACE="enp1s0"
-AFFINITY="8"
+AFFINITY="7"
 RTPRIO="51"
 
-IP_CIDR="192.168.100.102/24"
+IP_CIDR="192.168.1.102/24"
 
 
 cd "$(dirname "$0")"
