@@ -49,7 +49,7 @@ Log:
   LogThreadPriority: 1
   LogThreadCpu: 11
   LogFile: /var/log/mirror-crypto_two.log
-  LogLevel: Debug
+  LogLevel: Info
 LogJson:
   LogJson: true
   LogJsonThreadPriority: 1
