@@ -41,8 +41,8 @@ TSNHigh:
   TsnHighSocketPriority: 7
   TsnHighTxThreadPriority: 98
   TsnHighRxThreadPriority: 98
-  TsnHighTxThreadCpu: 9
-  TsnHighRxThreadCpu: 9
+  TsnHighTxThreadCpu: 8
+  TsnHighRxThreadCpu: 8
   TsnHighInterface: enp2s0
   TsnHighDestination: 80:6d:97:5b:72:6f
 Log:
