@@ -282,7 +282,7 @@ function run_wc () {
 	AFFINITY=$(affinity_for_interface ${INTERFACE})
 	RTPRIO="85"
 	COMMAND="${PTP4L} -i ${INTERFACE} -f ${PTP4L_CONFIG} -m"
-	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-gt-${ROLE}.log &
+	run_rt_cmd ${AFFINITY} ${RTPRIO} "${COMMAND}" | sudo tee /var/log/ptp4l-${INTERFACE}-wc-${ROLE}.log &
 
 	# Set PTP timescale to 0
 	if [[ "${ROLE}" == "master" ]]; then
